@@ -351,7 +351,7 @@ async function callModel(prompt) {
       body: JSON.stringify({ prompt })
     });
     if (r.status === 401) { openSettings(); throw new Error('__wrongpin'); }
-    if (r.status === 429) throw new Error('Too many scoring requests in a short time. Wait a minute and try again.');
+    if (r.status === 429) throw new Error('__ratelimit');
 
     const raw = await r.text();
     let j = null;
@@ -396,6 +396,7 @@ $('#go').onclick = async () => {
     render(out, p, rub);
   } catch (e) {
     if (e.message === '__wrongpin') showErr('That PIN was not accepted. Check it and try again.');
+    else if (e.message === '__ratelimit') showErr('Too many scoring requests in a short time. Wait about a minute, then try again.');
     else if (e.message !== '__nopin') {
       if (/Failed to fetch|NetworkError|Load failed/i.test(e.message))
         showErr('Could not reach the server. Check that you are online and try again.', e.message);
