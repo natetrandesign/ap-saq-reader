@@ -1,19 +1,54 @@
 // Vercel serverless function. Holds the real API key server-side so no device
 // needs its own key: the client only ever sends the PIN and the prompt text.
-// Uses Google Gemini (free tier friendly). Set GEMINI_API_KEY in Vercel project settings.
+// Uses Google Gemini via the Interactions API. Set GEMINI_API_KEY in Vercel.
+import { timingSafeEqual } from 'node:crypto';
+
+/* Best-effort burst limiter. Serverless instances are ephemeral and horizontally
+   scaled, so this cannot be a hard global quota. It exists to blunt a rapid
+   scripted burst against a single warm instance, not to replace the PIN. */
+const HITS = new Map();
+const WINDOW_MS = 60_000;
+const MAX_PER_WINDOW = 12;
+
+function overLimit(ip) {
+  const now = Date.now();
+  const recent = (HITS.get(ip) || []).filter(t => now - t < WINDOW_MS);
+  recent.push(now);
+  HITS.set(ip, recent);
+  if (HITS.size > 500) for (const [k, v] of HITS) if (!v.some(t => now - t < WINDOW_MS)) HITS.delete(k);
+  return recent.length > MAX_PER_WINDOW;
+}
+
+function pinMatches(given, expected) {
+  if (typeof given !== 'string' || typeof expected !== 'string') return false;
+  const a = Buffer.from(given);
+  const b = Buffer.from(expected);
+  if (a.length !== b.length) return false;
+  try { return timingSafeEqual(a, b); } catch { return false; }
+}
+
 export default async function handler(req, res) {
+  res.setHeader('Cache-Control', 'no-store');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('Referrer-Policy', 'no-referrer');
+
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'Method not allowed' });
     return;
   }
 
-  const pin = req.headers['x-app-pin'];
   if (!process.env.APP_PIN) {
     res.status(500).json({ error: 'Server has no PIN configured yet. Set APP_PIN in Vercel project settings.' });
     return;
   }
-  if (!pin || pin !== process.env.APP_PIN) {
+  if (!pinMatches(req.headers['x-app-pin'], process.env.APP_PIN)) {
     res.status(401).json({ error: 'Wrong PIN' });
+    return;
+  }
+
+  const ip = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || 'unknown';
+  if (overLimit(ip)) {
+    res.status(429).json({ error: 'Too many scoring requests in a short time. Wait a minute and try again.' });
     return;
   }
 
@@ -35,8 +70,8 @@ export default async function handler(req, res) {
   const model = process.env.GEMINI_MODEL || 'gemini-3.8-flash';
 
   try {
-    // Google moved authorization keys to the Interactions API in September 2026.
-    // Auth keys are sent in x-goog-api-key, not as a URL query parameter.
+    // The key goes in a header, never in the URL, so it cannot land in
+    // intermediate access logs or referrer headers.
     const r = await fetch('https://generativelanguage.googleapis.com/v1beta/interactions', {
       method: 'POST',
       headers: {
@@ -48,7 +83,9 @@ export default async function handler(req, res) {
     const j = await r.json();
     if (!r.ok) {
       const err = Array.isArray(j) ? j[0]?.error : j.error;
-      res.status(r.status).json({ error: err?.message || `Gemini returned ${r.status}` });
+      const msg = String(err?.message || `Gemini returned ${r.status}`);
+      // Defensive: never echo anything key-shaped back to a browser.
+      res.status(r.status).json({ error: msg.replace(/AIza[\w-]{10,}|AQ\.[\w.-]{10,}/g, '[redacted]') });
       return;
     }
     const text = (j.steps || [])
@@ -57,11 +94,11 @@ export default async function handler(req, res) {
       .map(part => part.text || '')
       .join('');
     if (!text) {
-      res.status(502).json({ error: 'Gemini returned no text. It may have blocked the content, check finishReason.' });
+      res.status(502).json({ error: 'Gemini returned no text. It may have blocked the content.' });
       return;
     }
     res.status(200).json({ text });
   } catch (e) {
-    res.status(502).json({ error: 'Could not reach Gemini: ' + (e && e.message ? e.message : String(e)) });
+    res.status(502).json({ error: 'Could not reach Gemini.' });
   }
 }
