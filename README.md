@@ -34,7 +34,7 @@ Set these Vercel environment variables before deploying:
 
 - `GEMINI_API_KEY`, a key from Google AI Studio
 - `APP_PIN`, a long private access code shared only with approved users
-- `GEMINI_MODEL`, optional, defaults to `gemini-2.5-flash`
+- `GEMINI_MODEL`, optional, defaults to `gemini-3.8-flash`
 
 Student questions and answers are processed for scoring but are not stored by this application.
 
