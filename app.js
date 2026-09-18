@@ -48,7 +48,7 @@ document.querySelectorAll('.seg button').forEach(b => b.onclick = () => {
 });
 
 /* ------------------------------------------------------------------ data load */
-fetch('data.json').then(r => r.json()).then(d => { DATA = d; buildPicker(); })
+fetch('data.json?v=2').then(r => r.json()).then(d => { DATA = d; buildPicker(); })
   .catch(() => showErr('Could not load the question data file. Try a hard refresh.'));
 
 function keyOf(p) { return `${p.year}|${p.set}|${p.q}`; }
