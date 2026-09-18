@@ -9,9 +9,8 @@ const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&am
 let DATA = null, MODE = 'lib';
 
 const DEFAULTS = {
-  anthropic: { model: 'claude-sonnet-4-5-20250929', note: 'Create a key at <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">console.anthropic.com</a>. Claude Sonnet is the best calibrated of the three for this.' },
-  openai:    { model: 'gpt-4o',            note: 'Create a key at <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener">platform.openai.com</a>.' },
-  gemini:    { model: 'gemini-2.5-flash',  note: 'Gemini has a free tier. Create a key at <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com</a>.' }
+  anthropic: { model: 'claude-sonnet-4-5-20250929', note: 'Best results. Create a key at <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">console.anthropic.com</a>. Scoring one response costs well under a cent.' },
+  gemini:    { model: 'gemini-2.5-flash',  note: 'Free tier available, so this option can cost nothing. Create a key at <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com</a>.' }
 };
 
 /* ------------------------------------------------------------------ settings */
@@ -20,7 +19,7 @@ const cfg = {
   set(v) { localStorage.setItem('reader.cfg', JSON.stringify(v)); }
 };
 function openSettings() {
-  const c = cfg();
+  const c = cfg.get();
   $('#prov').value = c.provider || 'anthropic';
   $('#key').value = c.key || '';
   syncProv(!c.model);
@@ -138,7 +137,7 @@ function project(total, p) {
   const st = (p && DATA.stats[`${p.year}-${p.set}-${p.q}`]) || { mean: 1.78, sd: 0.96 };
   const pct = phi((total + 0.5 - st.mean) / st.sd) * 100;
   const band = AP_BANDS.find(b => pct >= b.lo && pct < b.hi) || AP_BANDS[4];
-  const lo = Math.max(1, band.score - 1), hi = Math.min(5, band.score + (band.score < 5 ? 0 : 0));
+  const lo = Math.max(1, band.score - 1);
   return { pct, ap: band.score, range: band.score === 5 ? '4–5' : `${lo}–${band.score}`, mean: st.mean, sd: st.sd, known: !!(p && DATA.stats[`${p.year}-${p.set}-${p.q}`]) };
 }
 
@@ -304,7 +303,7 @@ function pickCalibration(p, rub) {
 
 /* ------------------------------------------------------------------ model calls */
 async function callModel(prompt) {
-  const c = cfg();
+  const c = cfg.get();
   if (!c.key) { openSettings(); throw new Error('__nokey'); }
   const model = c.model || DEFAULTS[c.provider || 'anthropic'].model;
 
@@ -318,16 +317,6 @@ async function callModel(prompt) {
     const j = await r.json();
     if (!r.ok) throw new Error(j.error?.message || `Anthropic returned ${r.status}`);
     return j.content.map(b => b.text || '').join('');
-  }
-  if (c.provider === 'openai') {
-    const r = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json', authorization: 'Bearer ' + c.key },
-      body: JSON.stringify({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } })
-    });
-    const j = await r.json();
-    if (!r.ok) throw new Error(j.error?.message || `OpenAI returned ${r.status}`);
-    return j.choices[0].message.content;
   }
   const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(c.key)}`, {
     method: 'POST', headers: { 'content-type': 'application/json' },

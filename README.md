@@ -30,9 +30,9 @@ The scoring instructions also encode the failure taxonomy that shows up across a
 
 There is no backend. Scoring runs in your browser against your own API key, which is stored only in your browser's local storage and sent directly to the provider.
 
-- Anthropic (Claude), best calibrated of the three
-- OpenAI
-- Google Gemini, has a free tier
+- Anthropic (Claude), best results
+
+- Google Gemini, free tier available
 
 ## Install it
 
