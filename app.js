@@ -4,6 +4,8 @@
 
 const $ = s => document.querySelector(s);
 const el = (t, c, h) => { const n = document.createElement(t); if (c) n.className = c; if (h != null) n.innerHTML = h; return n; };
+const ord = n => { const r = n % 100; if (r >= 11 && r <= 13) return n + 'th';
+  return n + ({ 1: 'st', 2: 'nd', 3: 'rd' }[n % 10] || 'th'); };
 const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
 let DATA = null, MODE = 'lib';
@@ -48,7 +50,7 @@ document.querySelectorAll('.seg button').forEach(b => b.onclick = () => {
 });
 
 /* ------------------------------------------------------------------ data load */
-fetch('data.json?v=2').then(r => r.json()).then(d => { DATA = d; buildPicker(); })
+fetch('data.json?v=3').then(r => r.json()).then(d => { DATA = d; buildPicker(); })
   .catch(() => showErr('Could not load the question data file. Try a hard refresh.'));
 
 function keyOf(p) { return `${p.year}|${p.set}|${p.q}`; }
@@ -388,7 +390,7 @@ function render(o, p, rub) {
       <div class="meter"><i style="width:${Math.max(2, Math.min(100, pr.pct)).toFixed(1)}%"></i></div>
       <div class="mscale"><span>0</span><span>national mean ${pr.mean.toFixed(2)}/3</span><span>100th pct</span></div>
       <p style="margin-top:12px">A <b>${total}/${parts.length || 3}</b> on this question puts you around the
-      <b>${pr.pct.toFixed(0)}th percentile</b> of students who answered it${pr.known ? '' : ' (using average SAQ difficulty, since this question has no published statistics)'}.
+      <b>${ord(Math.round(pr.pct))} percentile</b> of students who answered it${pr.known ? '' : ' (using average SAQ difficulty, since this question has no published statistics)'}.
       Mapped onto the released AP score distribution that is an <b>AP ${pr.ap}</b>, realistically <b>${pr.range}</b>.</p>
       <p style="font-size:13.5px;color:var(--ink-3)">Read that as a signal, not a grade. The short-answer
       section is only about 20% of the exam, so one SAQ cannot settle a composite score. Multiple-choice is 40%,
