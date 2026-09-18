@@ -13,10 +13,14 @@ const MAX_PER_WINDOW = 12;
 function overLimit(ip) {
   const now = Date.now();
   const recent = (HITS.get(ip) || []).filter(t => now - t < WINDOW_MS);
+  if (HITS.size > 500) for (const [k, v] of HITS) if (!v.some(t => now - t < WINDOW_MS)) HITS.delete(k);
+  // Only count requests we actually serve. Counting rejected ones would let a
+  // client extend its own penalty forever just by retrying, so the window would
+  // never drain and a legitimate user could stay locked out indefinitely.
+  if (recent.length >= MAX_PER_WINDOW) { HITS.set(ip, recent); return true; }
   recent.push(now);
   HITS.set(ip, recent);
-  if (HITS.size > 500) for (const [k, v] of HITS) if (!v.some(t => now - t < WINDOW_MS)) HITS.delete(k);
-  return recent.length > MAX_PER_WINDOW;
+  return false;
 }
 
 function pinMatches(given, expected) {
