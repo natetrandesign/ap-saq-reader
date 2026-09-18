@@ -71,38 +71,57 @@ export default async function handler(req, res) {
     return;
   }
 
-  const model = process.env.GEMINI_MODEL || 'gemini-3.8-flash';
+  /* Gemini's free tier caps requests per DAY per MODEL. Walk a chain of
+     comparable models so exhausting one model's daily allowance degrades to the
+     next instead of taking the whole app down. GEMINI_MODEL, if set, goes first. */
+  const chain = [
+    process.env.GEMINI_MODEL,
+    'gemini-3.6-flash',
+    'gemini-3.5-flash',
+    'gemini-3.1-flash-lite'
+  ].filter(Boolean).filter((m, i, a) => a.indexOf(m) === i);
 
-  try {
-    // The key goes in a header, never in the URL, so it cannot land in
-    // intermediate access logs or referrer headers.
-    const r = await fetch('https://generativelanguage.googleapis.com/v1beta/interactions', {
-      method: 'POST',
-      headers: {
-        'content-type': 'application/json',
-        'x-goog-api-key': process.env.GEMINI_API_KEY
-      },
-      body: JSON.stringify({ model, input: prompt })
-    });
-    const j = await r.json();
-    if (!r.ok) {
+  const scrub = s => String(s).replace(/AIza[\w-]{10,}|AQ\.[\w.-]{10,}/g, '[redacted]');
+  let lastStatus = 502;
+  let lastMsg = 'Could not reach Gemini.';
+
+  for (const model of chain) {
+    try {
+      // The key goes in a header, never in the URL, so it cannot land in
+      // intermediate access logs or referrer headers.
+      const r = await fetch('https://generativelanguage.googleapis.com/v1beta/interactions', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'x-goog-api-key': process.env.GEMINI_API_KEY
+        },
+        body: JSON.stringify({ model, input: prompt })
+      });
+      const j = await r.json();
+
+      if (r.ok) {
+        const text = (j.steps || [])
+          .filter(step => step.type === 'model_output')
+          .flatMap(step => step.content || [])
+          .map(part => part.text || '')
+          .join('');
+        if (text) { res.status(200).json({ text, model }); return; }
+        lastStatus = 502; lastMsg = 'Gemini returned no text. It may have blocked the content.';
+        continue;
+      }
+
       const err = Array.isArray(j) ? j[0]?.error : j.error;
-      const msg = String(err?.message || `Gemini returned ${r.status}`);
-      // Defensive: never echo anything key-shaped back to a browser.
-      res.status(r.status).json({ error: msg.replace(/AIza[\w-]{10,}|AQ\.[\w.-]{10,}/g, '[redacted]') });
+      lastStatus = r.status;
+      lastMsg = scrub(err?.message || `Gemini returned ${r.status}`);
+      // Quota exhausted or model retired: try the next model in the chain.
+      if (r.status === 429 || r.status === 404) continue;
+      // Anything else (bad key, blocked content) will not be fixed by retrying.
+      res.status(lastStatus).json({ error: lastMsg });
       return;
+    } catch (e) {
+      lastStatus = 502; lastMsg = 'Could not reach Gemini.';
     }
-    const text = (j.steps || [])
-      .filter(step => step.type === 'model_output')
-      .flatMap(step => step.content || [])
-      .map(part => part.text || '')
-      .join('');
-    if (!text) {
-      res.status(502).json({ error: 'Gemini returned no text. It may have blocked the content.' });
-      return;
-    }
-    res.status(200).json({ text });
-  } catch (e) {
-    res.status(502).json({ error: 'Could not reach Gemini.' });
   }
+
+  res.status(lastStatus).json({ error: lastMsg });
 }
