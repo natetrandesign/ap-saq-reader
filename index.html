@@ -234,15 +234,13 @@ footer.foot{margin:44px 0 0;padding:20px 0 0;border-top:1px solid var(--line);
 .bt .btl{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.085em;
   color:var(--ink-3);margin:0 0 8px}
 .bt.hero{grid-column:span 6;padding:17px 18px;background:linear-gradient(160deg,#fffdf9,#f7f2ea)}
-.bt.sc{grid-column:span 3}
-.bt.wide{grid-column:span 3}
 .bt.half{grid-column:span 3}
 .bt.full{grid-column:span 6}
 .bt.pt{grid-column:span 6}
-/* When the panel itself is narrow, prose tiles go full width rather than
-   becoming tall thin columns. */
+/* When the panel itself is narrow, a half tile goes full width rather than
+   becoming a tall thin column. */
 @container (max-width:620px){
-  .bt.sc,.bt.wide,.bt.half{grid-column:span 6}
+  .bt.half{grid-column:span 6}
 }
 .heroRow{display:flex;align-items:flex-end;gap:20px;flex-wrap:wrap}
 .heroNum{font-family:var(--mono);font-size:44px;font-weight:700;line-height:.95;letter-spacing:-.02em}
@@ -504,6 +502,6 @@ mark.a .anum{font-family:var(--mono);font-size:9.5px;font-weight:700;vertical-al
   </div>
 </form></dialog>
 
-<script src="app.js?v=12"></script>
+<script src="app.js?v=13"></script>
 </body>
 </html>
