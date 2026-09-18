@@ -369,6 +369,13 @@ STEP 3. Write feedback that is specific enough to act on tonight. Never write ge
 "add more detail" or "be more specific" on its own. Every item must name the exact moment in this
 response it refers to and the exact move to make instead.
 
+JSON FORMATTING RULES, these matter because you are quoting the student verbatim:
+- Output one JSON object and nothing else. No code fence, no text before or after.
+- Every double quote inside a string value must be escaped as \\" and every line break as \\n.
+- Prefer quoting spans that do not contain quotation marks. If the only useful span does
+  contain one, escape it correctly rather than altering the student's words.
+- No trailing commas.
+
 Respond with ONLY a JSON object, no markdown fence, no commentary outside it:
 {
   "parts": [
@@ -498,7 +505,7 @@ $('#genGo').onclick = async () => {
   $('#err').innerHTML = '';
   btn.disabled = true; btn.innerHTML = '<span class="spin"></span> Writing…';
   try {
-    const g = parseJSON(await callModel(buildGenPrompt($('#genPeriod').value, $('#genKind').value)));
+    const g = await askJSON(buildGenPrompt($('#genPeriod').value, $('#genKind').value));
     if (!g || !g.tasks || !g.tasks.A) throw new Error('The model did not return a usable question.');
     const prompt = ['A', 'B', 'C'].map(L => `${L}. ${g.tasks[L] || ''}`).join('\n');
     GENQ = {
@@ -555,10 +562,44 @@ async function callModel(prompt) {
   throw lastErr;
 }
 
-function parseJSON(t) {
-  t = t.trim().replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '');
+function sliceObject(t) {
+  t = String(t == null ? '' : t).trim()
+    .replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '');
   const a = t.indexOf('{'), b = t.lastIndexOf('}');
-  return JSON.parse(a >= 0 ? t.slice(a, b + 1) : t);
+  return a >= 0 && b > a ? t.slice(a, b + 1) : t;
+}
+
+/* Deterministic repairs for the ways a model usually breaks JSON. Anything
+   riskier than this is handled by re-asking the model instead of guessing. */
+function repairJSON(s) {
+  return s
+    .replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, '')   // stray control chars
+    .replace(/,(\s*[}\]])/g, '$1')                              // trailing commas
+    .replace(/}\s*{/g, '},{');                                  // missing comma between objects
+}
+
+function parseJSON(t) {
+  const s = sliceObject(t);
+  try { return JSON.parse(s); } catch (e) { /* fall through */ }
+  return JSON.parse(repairJSON(s));
+}
+
+/* Annotations must quote the student verbatim, and student text often contains
+   quotation marks and line breaks, which is exactly what models forget to
+   escape. If the object still will not parse, ask the model to re-emit it. */
+function repairPrompt(broken) {
+  return `The text below was supposed to be one valid JSON object but it does not parse.
+Return the SAME content as strictly valid JSON. Escape every double quote inside a string
+value as \\" and every line break inside a string value as \\n. Do not add, remove, reword
+or summarise any content. Output only the JSON object, with no code fence.
+
+${sliceObject(broken)}`;
+}
+
+async function askJSON(prompt) {
+  const raw = await callModel(prompt);
+  try { return parseJSON(raw); }
+  catch (e) { return parseJSON(await callModel(repairPrompt(raw))); }
 }
 
 /* ------------------------------------------------------------------ annotation */
@@ -673,7 +714,7 @@ $('#go').onclick = async () => {
   btn.disabled = true; btn.innerHTML = '<span class="spin"></span> Reading…';
   try {
     const rub = rubricFor(p);
-    const out = parseJSON(await callModel(buildPrompt(p, rub, Object.assign({}, answers, { qtext }))));
+    const out = await askJSON(buildPrompt(p, rub, Object.assign({}, answers, { qtext })));
     render(out, p, rub, answers);
     HIST.add({ out, p, rub, answers, qtext });
   } catch (e) {
