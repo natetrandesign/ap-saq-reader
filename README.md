@@ -6,7 +6,9 @@ Score AP World History: Modern short-answer questions (SAQs) against the officia
 
 ## What it does
 
-Paste an SAQ and a response. Reader scores each of the three parts independently, 1 point or 0, the way an AP Reader would, and explains every call in the reader's own idiom: quoting the student, naming the specific rubric reason, and supplying a model sentence that would have earned any point that was missed.
+Answer an SAQ one part at a time. Reader scores each of the three parts independently, 1 point or 0, the way an AP Reader would, and explains every call in the reader's own idiom: quoting the student and naming the specific rubric reason.
+
+It then **marks up the response itself**. Rather than handing back a replacement answer, it highlights the student's own phrases and attaches a margin note to each one, classified the way a teacher would: out of period, restatement, too vague, no mechanism, inaccurate, off task, or worth reinforcing. Where a phrase can be tightened, it rewrites only that phrase, so the student sees the edit instead of a new paragraph. Clicking a highlight jumps to its note.
 
 It then projects a 1 to 5 AP score. That projection is not a guess. It takes the rubric score, places it against the published national mean and standard deviation for that exact question, and maps the resulting percentile onto the released AP score distribution.
 
@@ -38,6 +40,12 @@ Set these Vercel environment variables before deploying:
 
 Student questions and answers are processed for scoring but are not stored by this application.
 
+## Other features
+
+- **Per-part answer boxes.** Each part gets its own labelled box showing that part's real task, so scoring and annotation are scoped correctly instead of guessing where part B ends.
+- **Question generator.** Writes a new practice SAQ in the released format, following the real task-verb distribution (Identify/Describe for A, Describe for B, Explain for C) and always anchoring an explicit period. Generated questions are clearly labelled as practice, not College Board material, and are scored against the rubric the model writes alongside them.
+- **History.** Every scored response is saved in the browser's local storage on that device and can be reopened with its full markup intact. Nothing is sent to a server for storage.
+
 ## Install it
 
 Open the link, then Add to Home Screen on iOS, or Install from the address bar on desktop Chrome. It caches its own shell and question bank, so the interface and all 28 rubrics work offline. Only the scoring call needs a connection.
@@ -47,7 +55,7 @@ Open the link, then Add to Home Screen on iOS, or Install from the address bar o
 | File | Purpose |
 | --- | --- |
 | `index.html` | Interface and styles |
-| `app.js` | Prompt construction, PIN-authenticated server calls, scoring projection, rendering |
+| `app.js` | Prompt construction, annotation matching, PIN-authenticated server calls, scoring projection, rendering |
 | `api/score.js` | PIN-gated Vercel function that calls Gemini with the server-side key |
 | `data.json` | Rubrics, prompts, samples, commentary, scoring statistics |
 | `sw.js` | Offline cache. Bump `CACHE` to ship an update |

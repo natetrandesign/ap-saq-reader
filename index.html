@@ -194,6 +194,89 @@ footer.foot{margin:44px 0 0;padding:20px 0 0;border-top:1px solid var(--line);
   .vcell+.vcell{border-left:0;border-top:1px solid var(--line)}
   .vcell{padding:20px}
 }
+/* ---------- per-part answer boxes ---------- */
+.ansgrid{display:flex;flex-direction:column;gap:16px}
+.ansblk{border:1px solid var(--line);border-radius:12px;background:#fdfcfa;padding:13px 14px 14px}
+.ansblk .ahead{display:flex;align-items:baseline;gap:9px;margin:0 0 9px}
+.ansblk .apid{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--terra);
+  letter-spacing:.06em;flex:none}
+.ansblk .atask{font-size:13px;color:var(--ink-2);line-height:1.45}
+.ansblk textarea{min-height:150px;resize:vertical;font-size:15px;line-height:1.62}
+.ansblk .acount{margin:6px 0 0;font-family:var(--mono);font-size:11px;color:var(--ink-3);text-align:right}
+
+/* ---------- annotation ---------- */
+.annotwrap{background:var(--card);border:1px solid var(--line);border-radius:14px;
+  padding:16px 17px 17px;margin:0 0 12px}
+.annothead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 11px}
+.annothead .at{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-3)}
+.atext{font-size:15.5px;line-height:1.95;white-space:pre-wrap;word-wrap:break-word;
+  padding:13px 14px;background:#fdfcfa;border:1px solid var(--line);border-radius:10px}
+mark.a{background:transparent;color:inherit;padding:1px 0 2px;cursor:pointer;
+  border-bottom:2px solid;border-radius:0;transition:background .12s}
+mark.a:hover,mark.a.sel{background:#fff5d6}
+mark.a[data-t="vague"]{border-color:#c98a1e}
+mark.a[data-t="period"]{border-color:#b4462f}
+mark.a[data-t="restate"]{border-color:#8a6fb0}
+mark.a[data-t="inaccurate"]{border-color:#b4462f}
+mark.a[data-t="nomechanism"]{border-color:#c98a1e}
+mark.a[data-t="offtask"]{border-color:#b4462f}
+mark.a[data-t="strong"]{border-color:#3f7d52}
+mark.a .anum{font-family:var(--mono);font-size:9.5px;font-weight:700;vertical-align:super;
+  margin-left:2px;opacity:.75}
+.alist{margin:13px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:9px}
+.alist li{display:flex;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;
+  background:#fdfcfa;scroll-margin-top:80px}
+.alist li.sel{border-color:var(--navy);background:#fff5d6}
+.alist .an{font-family:var(--mono);font-size:10.5px;font-weight:700;color:var(--ink-3);flex:none;
+  padding-top:2px;min-width:16px}
+.alist .ab{flex:1;min-width:0}
+.alist .atag{display:inline-block;font-size:10px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.06em;padding:2px 7px;border-radius:5px;margin:0 0 5px}
+.atag.vague,.atag.nomechanism{background:#fdf1dc;color:#8a5d10}
+.atag.period,.atag.inaccurate,.atag.offtask{background:#fbe9e5;color:#8d3623}
+.atag.restate{background:#f1ecf8;color:#5d4880}
+.atag.strong{background:#e6f2e9;color:#2f6040}
+.alist .anote{font-size:14px;line-height:1.6;margin:0}
+.alist .arev{margin:8px 0 0;padding:9px 11px;background:#fff;border:1px dashed var(--line-2);
+  border-radius:8px;font-size:14px;line-height:1.6}
+.alist .arev .rl{display:block;font-size:10px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.07em;color:var(--ink-3);margin:0 0 4px}
+.nomark{font-size:13.5px;color:var(--ink-3);margin:10px 0 0}
+
+/* ---------- richer feedback ---------- */
+.fb{display:flex;flex-direction:column;gap:10px;margin:0;padding:0;list-style:none}
+.fb li{border:1px solid var(--line);border-radius:10px;padding:11px 13px;background:var(--card)}
+.fb .fbp{font-size:14.5px;font-weight:600;margin:0 0 6px;line-height:1.5}
+.fb .fbe{font-size:13.5px;line-height:1.6;margin:0 0 6px;color:var(--ink-2);
+  border-left:2px solid var(--line-2);padding-left:9px}
+.fb .fba{font-size:13.5px;line-height:1.6;margin:0;color:var(--ink)}
+.fb .fba b{color:var(--terra);font-weight:600}
+
+/* ---------- history ---------- */
+.hist{display:flex;flex-direction:column;gap:9px;margin:10px 0 0}
+.hrow{display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:1px solid var(--line);
+  border-radius:11px;background:var(--card);padding:11px 13px;cursor:pointer;font:inherit}
+.hrow:hover{border-color:var(--ink-3)}
+.hsc{font-family:var(--mono);font-weight:700;font-size:15px;flex:none;width:34px;text-align:center}
+.hsc.y{color:var(--good)}.hsc.m{color:#c98a1e}.hsc.n{color:var(--bad)}
+.hb{flex:1;min-width:0}
+.hq{font-size:14px;font-weight:500;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hd{font-family:var(--mono);font-size:11px;color:var(--ink-3);margin:2px 0 0}
+.hdel{flex:none;border:0;background:transparent;color:var(--ink-3);cursor:pointer;font-size:17px;
+  line-height:1;padding:4px 6px;border-radius:6px}
+.hdel:hover{background:#fbe9e5;color:var(--bad)}
+.hempty{font-size:13.5px;color:var(--ink-3);margin:10px 0 0}
+
+/* ---------- generator ---------- */
+.genrow{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin:0 0 12px}
+.genrow .gf{flex:1;min-width:150px}
+.genbtn{border:1px solid var(--navy);background:var(--navy);color:#fff;font:inherit;font-size:14px;
+  font-weight:500;padding:11px 18px;border-radius:10px;cursor:pointer;flex:none}
+.genbtn:disabled{opacity:.55;cursor:default}
+.genout{margin:12px 0 0;padding:14px 15px;background:#fdfcfa;border:1px solid var(--line);border-radius:12px}
+.genout .gl{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;
+  color:var(--ink-3);margin:0 0 7px}
+.gwarn{font-size:12.5px;color:var(--ink-3);margin:9px 0 0;line-height:1.55}
 </style>
 </head>
 <body>
@@ -224,6 +307,7 @@ footer.foot{margin:44px 0 0;padding:20px 0 0;border-top:1px solid var(--line);
   <div class="seg" role="tablist">
     <button role="tab" aria-selected="true" data-mode="lib">Released SAQ</button>
     <button role="tab" aria-selected="false" data-mode="own">Paste my own</button>
+    <button role="tab" aria-selected="false" data-mode="gen">Generate new</button>
   </div>
 
   <div id="paneLib">
@@ -234,16 +318,44 @@ footer.foot{margin:44px 0 0;padding:20px 0 0;border-top:1px solid var(--line);
 
   <div id="paneOwn" hidden>
     <label class="fld" for="qown">Question, including any source or passage</label>
-    <textarea id="qown" rows="8" placeholder="Paste the full SAQ here, e.g.&#10;&#10;1. Respond to parts A, B, and C.&#10;  A. Identify one claim the author makes about ...&#10;  B. Describe one economic change that ...&#10;  C. Explain one reason why ...&#10;&#10;Include the stimulus passage or image caption if the question has one."></textarea>
+    <textarea id="qown" rows="10" placeholder="Paste the full SAQ here, e.g.&#10;&#10;1. Respond to parts A, B, and C.&#10;  A. Identify one claim the author makes about ...&#10;  B. Describe one economic change that ...&#10;  C. Explain one reason why ...&#10;&#10;Include the stimulus passage or image caption if the question has one."></textarea>
+  </div>
+
+  <div id="paneGen" hidden>
+    <div class="genrow">
+      <div class="gf">
+        <label class="fld" for="genPeriod">Time period</label>
+        <select id="genPeriod">
+          <option value="any">Any period on the exam</option>
+          <option value="c. 1200 to 1450">Unit 1&ndash;2 &middot; c. 1200 to 1450</option>
+          <option value="c. 1450 to 1750">Unit 3&ndash;4 &middot; c. 1450 to 1750</option>
+          <option value="c. 1750 to 1900">Unit 5&ndash;6 &middot; c. 1750 to 1900</option>
+          <option value="c. 1900 to the present">Unit 7&ndash;9 &middot; c. 1900 to present</option>
+        </select>
+      </div>
+      <div class="gf">
+        <label class="fld" for="genKind">Question type</label>
+        <select id="genKind">
+          <option value="secondary">Secondary-source stimulus</option>
+          <option value="primary">Primary-source stimulus</option>
+          <option value="none">No stimulus</option>
+        </select>
+      </div>
+      <button class="genbtn" id="genGo">Generate a question</button>
+    </div>
+    <div id="genOut"></div>
+    <p class="gwarn">Generated questions imitate the released format and are checked against the
+      real task-verb patterns, but they are not College Board questions and have no official rubric.
+      Scoring for a generated question uses the rubric the model wrote alongside it.</p>
   </div>
 </section>
 
 <!-- STEP 2 -->
 <section class="card">
   <div class="step"><span class="n">2</span><h2>Your response</h2></div>
-  <p class="hint">Label the parts a, b, c so each one gets scored separately.</p>
-  <textarea id="ans" rows="12" placeholder="a) ...&#10;&#10;b) ...&#10;&#10;c) ..."></textarea>
-  <div style="margin-top:14px">
+  <p class="hint">One box per part, so each is scored and annotated separately.</p>
+  <div class="ansgrid" id="ansgrid"></div>
+  <div style="margin-top:16px">
     <button class="go" id="go">Score this response</button>
   </div>
   <div id="err"></div>
@@ -252,8 +364,15 @@ footer.foot{margin:44px 0 0;padding:20px 0 0;border-top:1px solid var(--line);
 <!-- RESULTS -->
 <div id="out"></div>
 
+<!-- HISTORY -->
+<section class="card" id="histCard">
+  <div class="step"><span class="n">3</span><h2>Your history</h2></div>
+  <p class="hint">Every response you score is saved on this device only. Open one to see the full marked-up feedback again.</p>
+  <div class="hist" id="histList"></div>
+</section>
+
 <footer class="foot">
-  <span class="pill">offline-ready</span><span class="pill">your answers aren't saved anywhere</span><br>
+  <span class="pill">offline-ready</span><span class="pill">history stays on this device</span><br>
   Rubrics, acceptable-response lists, scored student samples, reader commentary and scoring
   statistics are taken from the released AP World History: Modern exam materials published on
   AP&nbsp;Central for 2023, 2024, 2025 and 2026. Unofficial study tool, not affiliated with or
@@ -277,6 +396,6 @@ footer.foot{margin:44px 0 0;padding:20px 0 0;border-top:1px solid var(--line);
   </div>
 </form></dialog>
 
-<script src="app.js?v=7"></script>
+<script src="app.js?v=8"></script>
 </body>
 </html>
