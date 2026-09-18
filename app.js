@@ -10,34 +10,23 @@ const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&am
 
 let DATA = null, MODE = 'lib';
 
-const DEFAULTS = {
-  anthropic: { model: 'claude-sonnet-4-5-20250929', note: 'Best results. Create a key at <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">console.anthropic.com</a>. Scoring one response costs well under a cent.' },
-  gemini:    { model: 'gemini-2.5-flash',  note: 'Free tier available, so this option can cost nothing. Create a key at <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com</a>.' }
-};
-
 /* ------------------------------------------------------------------ settings */
+/* Scoring runs on a shared server (see api/score.js). The only thing a device
+   needs locally is the access PIN, which the server checks before it will
+   spend the shared API key. */
 const cfg = {
   get() { try { return JSON.parse(localStorage.getItem('reader.cfg')) || {}; } catch { return {}; } },
   set(v) { localStorage.setItem('reader.cfg', JSON.stringify(v)); }
 };
 function openSettings() {
   const c = cfg.get();
-  $('#prov').value = c.provider || 'anthropic';
-  $('#key').value = c.key || '';
-  syncProv(!c.model);
-  if (c.model) $('#model').value = c.model;
+  $('#pin').value = c.pin || '';
   $('#dlg').showModal();
 }
-function syncProv(resetModel) {
-  const p = $('#prov').value;
-  $('#keynote').innerHTML = DEFAULTS[p].note;
-  if (resetModel) $('#model').value = DEFAULTS[p].model;
-}
 $('#gear').onclick = openSettings;
-$('#prov').onchange = () => syncProv(true);
 $('#dcancel').onclick = () => $('#dlg').close();
 $('#dsave').onclick = () => {
-  cfg.set({ provider: $('#prov').value, model: $('#model').value.trim() || DEFAULTS[$('#prov').value].model, key: $('#key').value.trim() });
+  cfg.set({ pin: $('#pin').value.trim() });
   $('#dlg').close();
 };
 
@@ -306,27 +295,17 @@ function pickCalibration(p, rub) {
 /* ------------------------------------------------------------------ model calls */
 async function callModel(prompt) {
   const c = cfg.get();
-  if (!c.key) { openSettings(); throw new Error('__nokey'); }
-  const model = c.model || DEFAULTS[c.provider || 'anthropic'].model;
+  if (!c.pin) { openSettings(); throw new Error('__nopin'); }
 
-  if ((c.provider || 'anthropic') === 'anthropic') {
-    const r = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json', 'x-api-key': c.key,
-                 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
-      body: JSON.stringify({ model, max_tokens: 3000, messages: [{ role: 'user', content: prompt }] })
-    });
-    const j = await r.json();
-    if (!r.ok) throw new Error(j.error?.message || `Anthropic returned ${r.status}`);
-    return j.content.map(b => b.text || '').join('');
-  }
-  const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(c.key)}`, {
-    method: 'POST', headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { responseMimeType: 'application/json' } })
+  const r = await fetch('/api/score', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', 'x-app-pin': c.pin },
+    body: JSON.stringify({ prompt })
   });
   const j = await r.json();
-  if (!r.ok) throw new Error(j.error?.message || `Gemini returned ${r.status}`);
-  return j.candidates[0].content.parts.map(x => x.text || '').join('');
+  if (r.status === 401) { openSettings(); throw new Error('__wrongpin'); }
+  if (!r.ok) throw new Error(j.error || `Server returned ${r.status}`);
+  return j.text;
 }
 
 function parseJSON(t) {
@@ -354,10 +333,11 @@ $('#go').onclick = async () => {
     const out = parseJSON(await callModel(buildPrompt(p, rub, { text: answer, qtext })));
     render(out, p, rub);
   } catch (e) {
-    if (e.message !== '__nokey') {
+    if (e.message === '__wrongpin') showErr('That PIN was not accepted. Check it and try again.');
+    else if (e.message !== '__nopin') {
       if (/Failed to fetch|NetworkError|Load failed/i.test(e.message))
-        showErr('Could not reach the provider. Check the key, the model name, and that you are online.', e.message);
-      else if (e instanceof SyntaxError) showErr('The model did not return clean JSON. Try again, or switch to a stronger model in settings.', e.message);
+        showErr('Could not reach the server. Check that you are online and try again.', e.message);
+      else if (e instanceof SyntaxError) showErr('The model did not return clean JSON. Try again.', e.message);
       else showErr('Scoring failed.', e.message);
     }
   } finally { btn.disabled = false; btn.innerHTML = old; }

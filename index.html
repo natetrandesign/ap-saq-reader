@@ -204,7 +204,7 @@ footer.foot{margin:44px 0 0;padding:20px 0 0;border-top:1px solid var(--line);
     <h1>Reader<em>.</em></h1>
     <p class="tagline">Paste an AP World History: Modern short-answer question and your response. Get it scored part by part against the official College&nbsp;Board rubric, plus an honest read on where it lands on the 1&ndash;5 scale.</p>
   </div>
-  <button class="iconbtn" id="gear" title="API settings" aria-label="API settings">
+  <button class="iconbtn" id="gear" title="App PIN" aria-label="App PIN">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1.08-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1.08 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
   </button>
 </header>
@@ -253,7 +253,7 @@ footer.foot{margin:44px 0 0;padding:20px 0 0;border-top:1px solid var(--line);
 <div id="out"></div>
 
 <footer class="foot">
-  <span class="pill">offline-ready</span><span class="pill">nothing stored on a server</span><br>
+  <span class="pill">offline-ready</span><span class="pill">your answers aren't saved anywhere</span><br>
   Rubrics, acceptable-response lists, scored student samples, reader commentary and scoring
   statistics are taken from the released AP World History: Modern exam materials published on
   AP&nbsp;Central for 2023, 2024, 2025 and 2026. Unofficial study tool, not affiliated with or
@@ -263,31 +263,20 @@ footer.foot{margin:44px 0 0;padding:20px 0 0;border-top:1px solid var(--line);
 
 <!-- SETTINGS -->
 <dialog id="dlg"><form class="dlg" id="dlgf" method="dialog">
-  <h2>Connect a model</h2>
-  <p class="d">Scoring runs in your browser against your own API key. The key is saved only in this
-    browser's local storage and is sent straight to the provider, never to me.</p>
+  <h2>Enter the app PIN</h2>
+  <p class="d">Scoring runs on a shared server, so no device needs its own API key. Just the PIN,
+    which is saved only in this browser's local storage.</p>
   <div class="row">
-    <label class="fld" for="prov">Provider</label>
-    <select id="prov">
-      <option value="anthropic">Anthropic (Claude)</option>
-      <option value="gemini">Google Gemini</option>
-    </select>
+    <label class="fld" for="pin">PIN</label>
+    <input type="password" id="pin" spellcheck="false" autocomplete="off" autocapitalize="off" placeholder="Ask Nathan for the PIN">
   </div>
-  <div class="row">
-    <label class="fld" for="model">Model</label>
-    <input type="text" id="model" spellcheck="false" autocapitalize="off">
-  </div>
-  <div class="row">
-    <label class="fld" for="key">API key</label>
-    <input type="password" id="key" spellcheck="false" autocomplete="off" placeholder="sk-...">
-  </div>
-  <p class="note" id="keynote"></p>
+  <p class="note" id="keynote">Don't have it? Ask Nathan for the app PIN.</p>
   <div class="dlgfoot">
     <button type="button" class="bcancel" id="dcancel">Cancel</button>
     <button type="button" class="bsave" id="dsave">Save</button>
   </div>
 </form></dialog>
 
-<script src="app.js?v=3"></script>
+<script src="app.js?v=4"></script>
 </body>
 </html>
