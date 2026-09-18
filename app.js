@@ -730,7 +730,7 @@ $('#go').onclick = async () => {
 };
 
 /* ------------------------------------------------------------------ render */
-function fbList(arr) {
+function fbItems(arr) {
   const ul = el('ul', 'fb');
   (arr || []).forEach(x => {
     const o = (x && typeof x === 'object') ? x : { point: String(x || ''), evidence: '', action: '' };
@@ -744,90 +744,109 @@ function fbList(arr) {
   return ul.children.length ? ul : null;
 }
 
+function tile(cls, label, node) {
+  const d = el('div', 'bt ' + cls);
+  if (label) d.appendChild(el('p', 'btl', esc(label)));
+  if (node) d.appendChild(node);
+  return d;
+}
+
 function render(o, p, rub, answers) {
   const parts = (Array.isArray(o.parts) ? o.parts : []).slice(0, PARTS_MAX);
   const denom = Math.min(PARTS_MAX, parts.length || PARTS_MAX);
   const total = Math.min(denom, parts.reduce((a, x) => a + (Number(x.earned) ? 1 : 0), 0));
   const pr = project(total, p);
   const out = $('#out'); out.innerHTML = '';
+  $('#lpEmpty').hidden = true;
 
-  const v = el('div', 'verdict');
-  v.innerHTML = `
-    <div class="vtop">
-      <div class="vcell">
-        <p class="lbl">Rubric score</p>
-        <div class="big">${total}<small>/${denom}</small></div>
-        <p class="sub">${pr.known ? `national mean ${pr.mean.toFixed(2)}` : 'estimated difficulty'}</p>
+  /* --- hero: the score, most important, pinned to the top of the bento --- */
+  const sc = total >= 3 ? 'y' : total >= 2 ? 'm' : 'n';
+  const hero = el('div', 'bt hero');
+  hero.innerHTML = `
+    <p class="btl">Rubric score</p>
+    <div class="heroRow">
+      <div>
+        <div class="heroNum ${sc}">${total}<small>/${denom}</small></div>
+        <p class="heroSub">${pr.known ? `national mean ${pr.mean.toFixed(2)}` : 'estimated difficulty'}</p>
       </div>
-      <div class="vcell">
-        <p class="lbl">Projected AP score</p>
-        <div class="big">${pr.ap}</div>
-        <p class="sub">likely ${pr.range}</p>
+      <div>
+        <div class="heroAp">AP ${pr.ap}</div>
+        <p class="heroSub">likely ${esc(pr.range)}</p>
+      </div>
+      <div style="flex:1;min-width:150px">
+        <div class="meter"><i style="width:${Math.max(2, Math.min(100, pr.pct)).toFixed(1)}%"></i></div>
+        <div class="mscale"><span>0</span><span>mean ${pr.mean.toFixed(2)}/3</span><span>100th</span></div>
       </div>
     </div>
-    <div class="vbody">
-      ${o.headline ? `<p><b>${esc(o.headline)}</b></p>` : ''}
-      <div class="meter"><i style="width:${Math.max(2, Math.min(100, pr.pct)).toFixed(1)}%"></i></div>
-      <div class="mscale"><span>0</span><span>national mean ${pr.mean.toFixed(2)}/3</span><span>100th pct</span></div>
-      <p style="margin-top:12px">A <b>${total}/${denom}</b> on this question puts you around the
-      <b>${ord(Math.round(pr.pct))} percentile</b> of students who answered it${pr.known ? '' : ' (using average SAQ difficulty, since this question has no published statistics)'}.
-      Mapped onto the released AP score distribution that is an <b>AP ${pr.ap}</b>, realistically <b>${pr.range}</b>.</p>
-      <p style="font-size:13.5px;color:var(--ink-3)">Read that as a signal, not a grade. The short-answer
-      section is only about 20% of the exam, so one SAQ cannot settle a composite score. Multiple-choice is 40%,
-      the DBQ 25% and the long essay 15%.</p>
-    </div>`;
-  out.appendChild(v);
+    ${o.headline ? `<p class="heroLine">${esc(o.headline)}</p>` : ''}`;
+  out.appendChild(hero);
 
-  out.appendChild(el('h3', 'sh', 'Part by part'));
+  /* --- context --- */
+  const ctx = el('div');
+  ctx.innerHTML = `<p style="font-size:13.5px;line-height:1.62;margin:0">
+      A <b>${total}/${denom}</b> here is about the <b>${ord(Math.round(pr.pct))} percentile</b>
+      of students who answered it${pr.known ? '' : ' (average SAQ difficulty, since this question has no published statistics)'},
+      which maps to <b>AP ${pr.ap}</b>, realistically <b>${esc(pr.range)}</b>.</p>
+    <p style="font-size:12.5px;color:var(--ink-3);line-height:1.55;margin:8px 0 0">
+      A signal, not a grade. Short answers are only about 20% of the exam.</p>`;
+  out.appendChild(tile('wide', 'What that means', ctx));
+
+  /* --- pattern --- */
+  const pat = o.pattern && typeof o.pattern === 'object' ? o.pattern : (o.pattern ? { summary: String(o.pattern) } : null);
+  if (pat && (pat.summary || pat.drill)) {
+    const n = el('div');
+    n.innerHTML = `${pat.summary ? `<p style="font-size:14px;line-height:1.6;margin:0">${esc(pat.summary)}</p>` : ''}
+      ${pat.evidence ? `<p class="fbe" style="margin:9px 0 0">${esc(pat.evidence)}</p>` : ''}
+      ${pat.drill ? `<div class="fixbox" style="margin-top:10px"><p class="fl">Drill this next</p><div>${esc(pat.drill)}</div></div>` : ''}`;
+    out.appendChild(tile('sc', 'The pattern', n));
+  }
+
+  /* --- per part, each with its own annotation tile --- */
   parts.forEach(x => {
     const L = String(x.part || '').toUpperCase().replace(/[^ABC]/g, '') || 'A';
     const y = !!Number(x.earned);
-    const d = el('div', 'part ' + (y ? 'y' : 'n'));
+    const n = el('div');
     let h = `<div class="phead">
         <span class="pid">PART ${esc(L)}</span>
-        <span class="pv ${y ? 'y' : 'n'}">${y ? '1 point earned' : '0 points'}</span>
+        <span class="pv ${y ? 'y' : 'n'}">${y ? '1 point' : '0 points'}</span>
       </div>`;
     if (x.task) h += `<p class="ptask">${esc(x.task)}</p>`;
     if (x.why) h += `<p class="why">${esc(x.why)}</p>`;
     if (!y && x.fix) h += `<div class="fixbox"><p class="fl">What was missing</p><div>${esc(x.fix)}</div></div>`;
-    d.innerHTML = h;
-    out.appendChild(d);
+    n.innerHTML = h;
+    out.appendChild(tile('pt ' + (y ? 'y' : 'n'), null, n));
+
     const txt = (answers && answers[L]) || '';
-    if (txt) renderAnnotated(out, txt, x.annotations, L);
+    if (txt) {
+      const host = el('div');
+      renderAnnotated(host, txt, x.annotations, L);
+      const t = tile('full', null, host);
+      t.style.padding = '0'; t.style.border = '0'; t.style.background = 'transparent';
+      out.appendChild(t);
+    }
   });
 
-  const pat = o.pattern && typeof o.pattern === 'object' ? o.pattern : (o.pattern ? { summary: String(o.pattern) } : null);
-  if (pat && (pat.summary || pat.drill)) {
-    out.appendChild(el('h3', 'sh', 'The pattern'));
-    const c = el('div', 'part');
-    c.innerHTML = `${pat.summary ? `<p class="why">${esc(pat.summary)}</p>` : ''}
-      ${pat.evidence ? `<p class="fbe" style="margin-top:9px">${esc(pat.evidence)}</p>` : ''}
-      ${pat.drill ? `<div class="fixbox" style="margin-top:11px"><p class="fl">Drill this before your next SAQ</p><div>${esc(pat.drill)}</div></div>` : ''}`;
-    out.appendChild(c);
-  }
-
-  [['What is working', o.strengths], ['Do this next time', o.fixes]].forEach(([t, arr]) => {
-    const ul = fbList(arr); if (!ul) return;
-    out.appendChild(el('h3', 'sh', t));
-    out.appendChild(ul);
+  /* --- feedback --- */
+  [['What is working', o.strengths, 'half'], ['Do this next time', o.fixes, 'half']].forEach(([label, arr, cls]) => {
+    const ul = fbItems(arr); if (!ul) return;
+    out.appendChild(tile(cls, label, ul));
   });
 
+  /* --- rubric reference --- */
   if (rub && (rub.rubric || Object.keys(rub.accept || {}).length)) {
     const accepted = rub.accept || {};
-    if (Object.keys(accepted).length) {
-      out.appendChild(el('h3', 'sh', rub.generated ? 'What this practice rubric accepts' : 'What the readers accepted'));
-    }
+    const host = el('div');
     ['A', 'B', 'C'].forEach(L => {
       if (!accepted[L] || !accepted[L].length) return;
       const dt = el('details', 'ref');
       dt.innerHTML = `<summary>Part ${L} — ${accepted[L].length} ${rub.generated ? 'acceptable responses' : 'official acceptable responses'}</summary>
         <div class="rbody"><ul class="accept">${accepted[L].map(a => `<li>${esc(a)}</li>`).join('')}</ul></div>`;
-      out.appendChild(dt);
+      host.appendChild(dt);
     });
     if (rub.rubric) {
       const dt = el('details', 'ref');
       dt.innerHTML = `<summary>Full published scoring guideline</summary><div class="rbody"><pre>${esc(rub.rubric)}</pre></div>`;
-      out.appendChild(dt);
+      host.appendChild(dt);
     }
     if (Object.keys(rub.samples || {}).length) {
       ['A', 'B', 'C'].forEach(L => {
@@ -838,14 +857,73 @@ function render(o, p, rub, answers) {
           <div class="rbody"><pre>${esc(rub.samples[L])}</pre>
           <p style="margin:14px 0 4px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-3)">Reader commentary</p>
           <pre>${esc(c.text || '')}</pre></div>`;
-        out.appendChild(s);
+        host.appendChild(s);
       });
+    }
+    if (host.children.length) {
+      out.appendChild(tile('full', rub.generated ? 'What this practice rubric accepts' : 'What the readers accepted', host));
     }
   }
 
-  out.classList.add('on');
-  out.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  $('#lpTitle').textContent = `Scoring · ${total}/${denom}`;
+  $('#fabBadge').textContent = `${total}/${denom}`;
+  $('#fab').classList.add('on');
+  openPanel();
+  // The score is the most important tile, so force the panel to the top after
+  // layout settles rather than trusting the browser to stay put.
+  const toTop = () => { $('#lpBody').scrollTop = 0; };
+  toTop();
+  requestAnimationFrame(() => { toTop(); requestAnimationFrame(toTop); });
+  setTimeout(toTop, 220);
 }
+
+/* ------------------------------------------------------------------ panel */
+const shell = $('#shell');
+function isMobile() { return window.matchMedia('(max-width:900px)').matches; }
+function openPanel() {
+  if (isMobile()) shell.classList.add('open');
+  else { shell.classList.remove('collapsed'); $('#btnSlide').innerHTML = '&laquo;'; $('#btnSlide').setAttribute('aria-expanded', 'true'); }
+}
+function closePanel() {
+  if (isMobile()) shell.classList.remove('open');
+  else { shell.classList.add('collapsed'); $('#btnSlide').innerHTML = '&raquo;'; $('#btnSlide').setAttribute('aria-expanded', 'false'); }
+}
+$('#btnSlide').onclick = () => {
+  const shut = isMobile() ? !shell.classList.contains('open') : shell.classList.contains('collapsed');
+  shut ? openPanel() : closePanel();
+};
+$('#fab').onclick = () => openPanel();
+$('#scrim').onclick = () => closePanel();
+window.addEventListener('keydown', e => { if (e.key === 'Escape' && shell.classList.contains('open')) closePanel(); });
+
+/* ------------------------------------------------------------------ reset */
+function resetWorkspace() {
+  $('#out').innerHTML = '';
+  $('#lpEmpty').hidden = false;
+  $('#err').innerHTML = '';
+  $('#lpTitle').textContent = 'Scoring';
+  $('#fab').classList.remove('on');
+  ['A', 'B', 'C'].forEach(L => { const t = $('#ans' + L); if (t) { t.value = ''; t.dispatchEvent(new Event('input')); } });
+  if (isMobile()) shell.classList.remove('open');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+$('#btnReset').onclick = () => {
+  const hasWork = $('#out').children.length || ['A', 'B', 'C'].some(L => ($('#ans' + L) || {}).value);
+  if (!hasWork) return;
+  const scored = $('#out').children.length > 0;
+  const msg = scored
+    ? 'Reset the workspace?\n\nThis scoring is already archived in your history below, so you can reopen it any time. Your answer boxes will be cleared.'
+    : 'Clear your answer boxes? Nothing has been scored yet, so this will not be saved.';
+  if (confirm(msg)) resetWorkspace();
+};
+$('#btnClearHist').onclick = () => {
+  const n = HIST.all().length;
+  if (!n) return;
+  if (confirm(`Delete all ${n} saved ${n === 1 ? 'response' : 'responses'} from this device?\n\nThis cannot be undone.`)) {
+    localStorage.removeItem(HIST.key);
+    HIST.render();
+  }
+};
 
 /* ------------------------------------------------------------------ history */
 const HIST = {
