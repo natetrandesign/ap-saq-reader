@@ -53,6 +53,96 @@ const ESSAY_BANK = {
       ]
     },
     {
+      id: '2025-leq-2',
+      released: true,
+      year: 2025,
+      label: '2025 LEQ 2 · Belief systems in Asia',
+      skill: 'Causation',
+      period: 'c. 1200–1450',
+      units: 'Units 1–2',
+      strayer: 'Ways of the World, 5e, chapters 2–3',
+      prompt: 'In the period circa 1200 to 1450, Buddhism, Hinduism, and Confucianism included ideas about social structures, gender roles, and political authority that influenced societies across Asia. Develop an argument that evaluates the extent to which one or more of these belief systems shaped societies and/or political systems in Asia during this period.',
+      hints: [
+        'A thesis needs a reason or categories. “Belief systems shaped Asia” restates the prompt. Readers have accepted a claim that rulers used these traditions to legitimize rule, or that Confucianism both strengthened the state and justified rebellion under the Mandate of Heaven.',
+        'The scoring notes treat Song bureaucracy, Khmer use of Hinduism or Buddhism, and patriarchy supported by Confucianism as illustrative, not exhaustive. Islam’s spread is a real development, but it does not answer this prompt unless it is tied to the belief systems the question names.'
+      ]
+    },
+    {
+      id: '2025-leq-3',
+      released: true,
+      year: 2025,
+      label: '2025 LEQ 3 · Economic rivalries and empire',
+      skill: 'Causation',
+      period: 'c. 1450–1750',
+      units: 'Units 3–4',
+      strayer: 'Ways of the World, 5e, chapters 4–6',
+      prompt: 'In the period circa 1450 to 1750, economic, political, and religious rivalries led many imperial states around the world to expand their territories and influence. Develop an argument that evaluates the extent to which economic rivalries were the primary motivation for the expansion of European empires during this period.',
+      hints: [
+        '“Evaluate the extent” and “primary” both ask you to weigh economic motives against political and religious ones. A list of explorers is not a line of reasoning.',
+        'Stay with European empires in 1450–1750. Spice-trade competition, the Portuguese and Dutch in the Indian Ocean, and missionary aims in the Americas are in range. A claim that only one motive existed usually drops the complexity point.'
+      ]
+    },
+    {
+      id: '2025-leq-4',
+      released: true,
+      year: 2025,
+      label: '2025 LEQ 4 · Medical and scientific discoveries',
+      skill: 'Causation',
+      period: 'Twentieth century',
+      units: 'Units 7–9',
+      strayer: 'Ways of the World, 5e, chapters 11–14',
+      prompt: 'During the twentieth century, medical and scientific discoveries affected life expectancies, access to resources, and social and economic structures, which reshaped individual lives as well as entire societies. Develop an argument that evaluates the extent to which medical and scientific discoveries benefited individuals and/or societies during this period.',
+      hints: [
+        'A minimally acceptable thesis still needs a reason, such as antibiotics lowering mortality and lengthening life. “Discoveries benefited people” restates the prompt.',
+        'Benefit is only half of an extent argument. A strong essay also names a limit: unequal access, new weapons, or environmental harm, with a specific twentieth-century example.'
+      ]
+    },
+    {
+      id: '2024-leq-2',
+      released: true,
+      year: 2024,
+      label: '2024 LEQ 2 · Exchange networks and cultural change',
+      skill: 'Causation',
+      period: 'c. 1200–1750',
+      units: 'Units 2–4',
+      strayer: 'Ways of the World, 5e, chapters 3–6',
+      prompt: 'In the period circa 1200–1750 networks of exchange led to the spread of religions, cultures, ideas, and traditions in many parts of Afro-Eurasia. Develop an argument that evaluates the extent to which exchange networks contributed to social or cultural change in Afro-Eurasia during this period.',
+      hints: [
+        'The period is long. Pick examples you can actually place, such as Muslim merchant diasporas, Sufis along trade routes, or the spread of Buddhism through Southeast Asian ports.',
+        'Name the network and the change. “Trade spread culture” is a restatement. Two specific cases that support an argument about extent can earn both evidence points.'
+      ]
+    },
+    {
+      id: '2024-leq-3',
+      released: true,
+      year: 2024,
+      label: '2024 LEQ 3 · Industrialization and change',
+      skill: 'Causation',
+      period: 'c. 1750–1900',
+      units: 'Units 5–6',
+      strayer: 'Ways of the World, 5e, chapters 7–10',
+      prompt: 'In the period circa 1750–1900, societies across the globe were affected by new technologies that transformed methods of production. Develop an argument that evaluates the extent to which the growth of industrialization led to economic or social change during this period.',
+      hints: [
+        'Readers have accepted a line of reasoning that factory production changed employment, family structure, and the move from rural communities to cities, or that it raised living standards for some and worsened conditions for mill workers.',
+        'Unsafe mills, child labor, unions, and middle-class reform are illustrative. A second region, not only Britain, makes the extent claim stronger.'
+      ]
+    },
+    {
+      id: '2024-leq-3-set2',
+      released: true,
+      year: 2024,
+      label: '2024 LEQ 3 · Set 2 · New political ideologies',
+      skill: 'Causation',
+      period: 'c. 1750–1900',
+      units: 'Units 5–6',
+      strayer: 'Ways of the World, 5e, chapters 7–10',
+      prompt: 'In the period circa 1750–1900, discontent with monarchist and imperial rule spread around many parts of the world and led to significant political changes. Develop an argument that evaluates the extent to which discontent with monarchist or imperial rule was the main source of new political ideologies or systems of government during this period.',
+      hints: [
+        '“Main source” is an extent claim. Enlightenment ideas, the Atlantic revolutions, and later nationalism can support it, but a 6 usually also shows another source, such as industrial class conflict.',
+        'Stay inside 1750–1900. A specific revolution or constitution beats the phrase “people wanted freedom.”'
+      ]
+    },
+    {
       id: 'practice-leq-compare',
       released: false,
       year: null,

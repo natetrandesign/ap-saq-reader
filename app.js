@@ -511,8 +511,8 @@ indistinguishable in form from the released College Board questions.\n\n`;
 - Never reuse the content of the examples above. Write a genuinely new question.\n\n`;
   s += `=== WHAT TO WRITE ===\nPeriod: ${period === 'any' ? 'choose any period the course covers and state it explicitly in the tasks' : period}\n`;
   s += kind === 'none'
-    ? `Stimulus: none. Write a stand-alone question, the way the released no-stimulus questions work.\n`
-    : `Stimulus: a short ${kind === 'primary' ? 'PRIMARY source excerpt, with an attribution line naming a plausible author, title and date' : 'SECONDARY source excerpt, written in the voice of a modern historian, with an attribution line naming a plausible historian, book title and publication year'}. 70 to 130 words. It must be invented for this exercise, historically plausible, and clearly labelled as not a real document.\n`;
+    ? `Stimulus: none. This matches released questions from before May 2027. The May 2027 exam gives every SAQ a source, so label this item as older practice, not as the 2027 form.\n`
+    : `Stimulus: a short ${kind === 'primary' ? 'PRIMARY source excerpt, with an attribution line naming a plausible author, title and date' : 'SECONDARY source excerpt, written in the voice of a modern historian, with an attribution line naming a plausible historian, book title and publication year'}. 70 to 130 words. It must be invented for this exercise, historically plausible, and clearly labelled as not a real document. On the May 2027 exam, question 1 uses a secondary text, question 2 a primary text, and question 3 a non-text source.\n`;
   s += `\nAlso write the scoring guideline: for each part, 3 to 5 genuinely different acceptable
 responses, phrased the way the real published guidelines phrase them.
 
@@ -800,13 +800,11 @@ function deriveScore(o, answers) {
 
 function render(o, p, rub, answers) {
   const { parts, denom, total } = deriveScore(o, answers);
-  // The AP 1-5 projection is calibrated against the published national
-  // statistics for the real three-part SAQ format, so it only applies when
-  // this question actually has all three parts.
+  // The percentile compares this question with students who took the same
+  // released item. It is not a prediction of the AP 1–5, which is a composite.
   const showAP = denom === PARTS_MAX;
   const pr = showAP ? project(total, p) : null;
   const out = $('#out'); out.innerHTML = '';
-  $('#lpEmpty').hidden = true;
 
   /* --- hero: the score, most important, pinned to the top of the bento --- */
   const sc = scoreClass(total, denom);
@@ -816,20 +814,17 @@ function render(o, p, rub, answers) {
     <div class="heroRow">
       <div>
         <div class="heroNum ${sc}">${total}<small>/${denom}</small></div>
-        ${showAP ? `<p class="heroSub">${pr.known ? `national mean ${pr.mean.toFixed(2)}` : 'estimated difficulty'}</p>` : ''}
+        ${showAP ? `<p class="heroSub">${pr.known ? `mean on this question ${pr.mean.toFixed(2)}/3` : 'estimated mean on a question like this'}</p>` : ''}
       </div>
       ${showAP ? `
-      <div>
-        <div class="heroAp">AP ${pr.ap}</div>
-        <p class="heroSub">likely ${esc(pr.range)}</p>
-      </div>
-      <div style="flex:1;min-width:150px">
+      <div style="flex:1;min-width:180px">
         <div class="meter"><i style="width:${Math.max(2, Math.min(100, pr.pct)).toFixed(1)}%"></i></div>
-        <div class="mscale"><span>0</span><span>mean ${pr.mean.toFixed(2)}/3</span><span>100th</span></div>
+        <div class="mscale"><span>below the mean</span><span>${pr.mean.toFixed(2)}/3</span><span>above it</span></div>
+        <p class="ruleline">About the ${Math.round(pr.pct)}th percentile of students on this question${pr.known ? '' : ', using an estimated mean'}. <b class="caution">That comparison is not an AP 1–5.</b> The SAQ section is three questions, 40 minutes, and <b class="key">20 percent</b> of the exam. In <b class="key">May 2027</b> every SAQ includes a source: a <b class="key">secondary text</b>, then a <b class="key">primary text</b>, then a <b class="key">non-text source</b>, each from a different period.</p>
       </div>` : `
       <div style="flex:1;min-width:170px">
         <p class="heroSub" style="line-height:1.55">This question has ${denom} part${denom === 1 ? '' : 's'}, not the standard
-          three, so it isn't mapped to an AP 1&ndash;5 projection.</p>
+          three, so it is not compared with the national mean on a released SAQ. Each part is still one point.</p>
       </div>`}
     </div>
     ${o.headline ? `<p class="heroLine">${esc(o.headline)}</p>` : ''}`;
@@ -910,46 +905,33 @@ function render(o, p, rub, answers) {
     }
   }
 
-  $('#lpTitle').textContent = `Scoring · ${total}/${denom}`;
-  $('#fabBadge').textContent = `${total}/${denom}`;
-  $('#fab').classList.add('on');
-  openPanel();
-  // The score is the most important tile, so force the panel to the top after
-  // layout settles rather than trusting the browser to stay put.
-  const toTop = () => { $('#lpBody').scrollTop = 0; };
-  toTop();
-  requestAnimationFrame(() => { toTop(); requestAnimationFrame(toTop); });
-  setTimeout(toTop, 220);
+  revealScore(`Scoring · ${total}/${denom}`);
 }
 
-/* ------------------------------------------------------------------ panel */
-const shell = $('#shell');
-function isMobile() { return window.matchMedia('(max-width:900px)').matches; }
-function openPanel() {
-  if (isMobile()) shell.classList.add('open');
-  else { shell.classList.remove('collapsed'); $('#btnSlide').innerHTML = '&laquo;'; $('#btnSlide').setAttribute('aria-expanded', 'true'); }
+/* The score opens under the writing, after the student asks for it. */
+function revealScore(label) {
+  const drop = $('#scoreDrop');
+  if (!drop) return;
+  drop.hidden = false;
+  drop.open = true;
+  const sum = $('#scoreSum');
+  if (sum) sum.textContent = label || 'Scoring';
+  requestAnimationFrame(() => drop.scrollIntoView({ behavior: 'smooth', block: 'nearest' }));
 }
-function closePanel() {
-  if (isMobile()) shell.classList.remove('open');
-  else { shell.classList.add('collapsed'); $('#btnSlide').innerHTML = '&raquo;'; $('#btnSlide').setAttribute('aria-expanded', 'false'); }
+function hideScore() {
+  const drop = $('#scoreDrop');
+  if (drop) { drop.hidden = true; drop.open = false; }
+  const out = $('#out');
+  if (out) out.innerHTML = '';
+  const sum = $('#scoreSum');
+  if (sum) sum.textContent = 'Scoring';
 }
-$('#btnSlide').onclick = () => {
-  const shut = isMobile() ? !shell.classList.contains('open') : shell.classList.contains('collapsed');
-  shut ? openPanel() : closePanel();
-};
-$('#fab').onclick = () => openPanel();
-$('#scrim').onclick = () => closePanel();
-window.addEventListener('keydown', e => { if (e.key === 'Escape' && shell.classList.contains('open')) closePanel(); });
 
 /* ------------------------------------------------------------------ reset */
 function resetWorkspace() {
-  $('#out').innerHTML = '';
-  $('#lpEmpty').hidden = false;
+  hideScore();
   $('#err').innerHTML = '';
-  $('#lpTitle').textContent = 'Scoring';
-  $('#fab').classList.remove('on');
   ['A', 'B', 'C'].forEach(L => { const t = $('#ans' + L); if (t) { t.value = ''; t.dispatchEvent(new Event('input')); } });
-  if (isMobile()) shell.classList.remove('open');
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 $('#btnReset').onclick = () => {
