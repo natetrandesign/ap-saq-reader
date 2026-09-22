@@ -356,6 +356,51 @@ mark.a .anum{font-family:var(--mono);font-size:9.5px;font-weight:700;vertical-al
 .genout .gl{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;
   color:var(--ink-3);margin:0 0 7px}
 .gwarn{font-size:12.5px;color:var(--ink-3);margin:9px 0 0;line-height:1.55}
+.pv.m{background:#fdf1dc;color:#8a5d10}
+
+.fmt{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 18px}
+.fmt button{border:1px solid var(--line-2);background:transparent;color:var(--ink-2);
+  font:inherit;font-size:14px;font-weight:600;padding:8px 14px;border-radius:999px;cursor:pointer}
+.fmt button[aria-selected=true]{background:var(--ink);color:#fdfcfa;border-color:var(--ink)}
+
+.moves{display:flex;flex-direction:column;gap:8px}
+.move{border:1px solid var(--line);border-radius:10px;background:#fdfcfa;padding:0}
+.move summary{cursor:pointer;padding:11px 13px;font-size:14px;display:flex;justify-content:space-between;gap:12px}
+.move summary span{font-family:var(--mono);font-size:11px;color:var(--ink-3)}
+.move p{margin:0;padding:0 13px 12px;font-size:14px;color:var(--ink-2);line-height:1.55}
+.ex{margin:0 13px 12px;padding:10px 12px;background:#fff;border:1px dashed var(--line-2);border-radius:8px}
+.ex .fl{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--amber);margin:0 0 6px}
+.badex,.goodex{padding:0 0 8px;font-size:13.5px;line-height:1.55}
+.goodex{color:var(--ink);padding-bottom:0}
+
+.docs{display:flex;flex-direction:column;gap:10px;margin:0 0 14px}
+.doc{border:1px solid var(--line);border-radius:12px;padding:12px 13px;background:#fdfcfa}
+.doc.practice{background:#fbfaf7}
+.doc header{display:flex;justify-content:space-between;gap:8px;align-items:center;margin:0 0 6px}
+.attr{font-size:12.5px;color:var(--ink-3);margin:0 0 8px;line-height:1.45}
+.doc p{margin:0;font-size:14.5px;line-height:1.55}
+.sort{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.sort button{border:1px solid var(--line-2);background:#fff;border-radius:999px;font:inherit;font-size:12.5px;
+  padding:5px 10px;cursor:pointer;color:var(--ink-2)}
+.sort button[aria-pressed=true]{background:var(--navy);color:#fff;border-color:var(--navy)}
+
+.qitem{border-top:1px solid var(--line);padding:16px 0}
+.qitem:first-child{border-top:0}
+.qtop{font-family:var(--mono);font-size:12px;color:var(--ink-3);margin:0 0 8px}
+.qtop span{color:var(--terra);font-weight:700;margin-right:6px}
+.stem{font-size:15.5px;line-height:1.5;margin:0 0 10px}
+.stim{margin:0 0 10px;padding:10px 12px;border-left:2px solid var(--line-2);color:var(--ink-2);font-size:14px;line-height:1.55}
+.opt{display:flex;gap:8px;align-items:flex-start;padding:8px 10px;border:1px solid transparent;border-radius:8px;cursor:pointer}
+.opt:hover{background:#f4f1ec}
+.opt input{margin-top:4px}
+ul.rev{list-style:none;margin:8px 0 0;padding:0}
+ul.rev li{padding:8px 0;border-top:1px solid var(--line);font-size:14px;line-height:1.5}
+ul.rev li span{display:block;color:var(--ink-2);font-size:13px;margin-top:3px}
+ul.rev li.ok span{color:var(--good)}
+ul.rev li.bad span{color:var(--bad)}
+table.ledger{width:100%;border-collapse:collapse;font-size:13px}
+table.ledger th,table.ledger td{text-align:left;padding:6px 6px;border-bottom:1px solid var(--line);vertical-align:top}
+table.ledger th{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-3)}
 </style>
 </head>
 <body>
@@ -370,6 +415,13 @@ mark.a .anum{font-family:var(--mono);font-size:9.5px;font-weight:700;vertical-al
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1.08-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1.08 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
   </button>
 </header>
+
+<nav class="fmt" id="fmtNav" role="tablist" aria-label="Question format">
+  <button type="button" role="tab" data-fmt="saq" aria-selected="true">SAQ</button>
+  <button type="button" role="tab" data-fmt="leq" aria-selected="false">LEQ</button>
+  <button type="button" role="tab" data-fmt="dbq" aria-selected="false">DBQ</button>
+  <button type="button" role="tab" data-fmt="mcq" aria-selected="false">Multiple choice</button>
+</nav>
 
 <div class="sourcebar" id="srcbar">
   <span><b>28</b> official rubrics</span>
@@ -398,6 +450,7 @@ mark.a .anum{font-family:var(--mono);font-size:9.5px;font-weight:700;vertical-al
 
 <!-- WORKSPACE, RIGHT -->
 <main class="rcol">
+<div id="saqFlow">
 
 <!-- STEP 1 -->
 <section class="card">
@@ -458,8 +511,11 @@ mark.a .anum{font-family:var(--mono);font-size:9.5px;font-weight:700;vertical-al
   <div style="margin-top:16px">
     <button class="go" id="go">Score this response</button>
   </div>
-  <div id="err"></div>
 </section>
+</div>
+
+<div id="formatMount" hidden></div>
+<div id="err"></div>
 
 <!-- HISTORY -->
 <section class="card" id="histCard">
@@ -479,10 +535,11 @@ mark.a .anum{font-family:var(--mono);font-size:9.5px;font-weight:700;vertical-al
 
 <footer class="foot">
   <span class="pill">offline-ready</span><span class="pill">history stays on this device</span><br>
-  Rubrics, acceptable-response lists, scored student samples, reader commentary and scoring
-  statistics are taken from the released AP World History: Modern exam materials published on
-  AP&nbsp;Central for 2023, 2024, 2025 and 2026. Unofficial study tool, not affiliated with or
-  endorsed by College Board. AP is a registered trademark of College Board.
+  SAQ rubrics and the released LEQ and DBQ prompts follow AP World History: Modern materials
+  published on AP&nbsp;Central, including the 2026 scoring guidelines. Multiple-choice items are
+  original and follow the chapter map of Strayer and Nelson, Ways of the World, 5th edition.
+  They are not taken from that book or from secure College Board questions. Unofficial study tool,
+  not affiliated with or endorsed by College Board or the publisher. AP is a registered trademark of College Board.
 </footer>
 </div>
 
@@ -502,6 +559,9 @@ mark.a .anum{font-family:var(--mono);font-size:9.5px;font-weight:700;vertical-al
   </div>
 </form></dialog>
 
-<script src="app.js?v=13"></script>
+<script src="app.js?v=14"></script>
+<script src="essays.js?v=1"></script>
+<script src="mcq.js?v=1"></script>
+<script src="formats.js?v=1"></script>
 </body>
 </html>

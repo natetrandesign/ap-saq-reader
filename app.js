@@ -979,16 +979,21 @@ const HIST = {
     catch { localStorage.setItem(this.key, JSON.stringify(a.slice(0, 15))); }
     this.render();
   },
-  add({ out, p, rub, answers, qtext }) {
-    const { total, denom } = deriveScore(out, answers);
+  add(entry) {
+    const { out, p, rub, answers, qtext } = entry;
+    const format = entry.format || 'saq';
+    const scored = format === 'saq' ? deriveScore(out, answers) : { total: entry.total, denom: entry.denom };
     const rec = {
       id: Date.now() + '-' + Math.random().toString(16).slice(2, 8),
-      ts: Date.now(), total, denom, out, answers,
-      label: p ? (p.generated ? `Practice · ${topicLabel(p)}` : `${p.year} Q${p.q}${p.set ? ` Set ${p.set}` : ''} — ${topicOf(p)}`) : `Your own question — ${(qtext || '').replace(/\s+/g, ' ').slice(0, 60)}`,
-      kind: p ? (p.generated ? 'gen' : 'lib') : 'own',
-      key: p && !p.generated ? keyOf(p) : null,
-      p: p && p.generated ? p : (p ? null : { prompt: qtext }),
-      rub: (rub && rub.generated) ? rub : null
+      ts: Date.now(), total: scored.total, denom: scored.denom, out, answers, format,
+      label: format === 'saq'
+        ? (p ? (p.generated ? `Practice · ${topicLabel(p)}` : `${p.year} Q${p.q}${p.set ? ` Set ${p.set}` : ''} — ${topicOf(p)}`) : `Your own question — ${(qtext || '').replace(/\s+/g, ' ').slice(0, 60)}`)
+        : (entry.label || format.toUpperCase()),
+      kind: format === 'saq' ? (p ? (p.generated ? 'gen' : 'lib') : 'own') : format,
+      key: format === 'saq' && p && !p.generated ? keyOf(p) : null,
+      p: format !== 'saq' ? null : (p && p.generated ? p : (p ? null : { prompt: qtext })),
+      rub: format === 'saq' && rub && rub.generated ? rub : null,
+      extra: entry.extra || null
     };
     const a = this.all(); a.unshift(rec); while (a.length > 60) a.pop();
     this.write(a);
@@ -996,6 +1001,11 @@ const HIST = {
   del(id) { this.write(this.all().filter(r => r.id !== id)); },
   open(id) {
     const r = this.all().find(x => x.id === id); if (!r) return;
+    if (r.format && r.format !== 'saq' && typeof window.openFormatHistory === 'function') {
+      window.openFormatHistory(r);
+      return;
+    }
+    if (typeof window.setFormat === 'function') window.setFormat('saq');
     let p = null, rub = null;
     if (r.kind === 'lib' && r.key) { p = DATA.prompts.find(x => keyOf(x) === r.key) || null; rub = rubricFor(p); }
     else if (r.kind === 'gen') { p = r.p; rub = r.rub; }
