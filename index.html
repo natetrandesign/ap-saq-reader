@@ -43,11 +43,6 @@ h1 em{font-style:italic;color:var(--terra)}
 .iconbtn:hover{border-color:var(--ink-3);color:var(--ink)}
 .iconbtn svg{width:19px;height:19px}
 
-.sourcebar{display:flex;flex-wrap:wrap;gap:6px 14px;padding:12px 0 0;margin:0 0 30px;
-  border-top:1px solid var(--line);font-size:12.5px;color:var(--ink-3);
-  font-family:var(--mono);letter-spacing:.01em}
-.sourcebar b{color:var(--ink-2);font-weight:500}
-
 /* ---------- cards / sections ---------- */
 section.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);
   padding:22px;margin:0 0 18px;box-shadow:var(--shadow)}
@@ -138,6 +133,10 @@ h3.sh{font-family:var(--serif);font-weight:400;font-size:26px;margin:28px 0 12px
   border-radius:9px;font-size:14px}
 .fixbox .fl{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;
   color:var(--amber);margin:0 0 5px}
+.fixbox.missbox{background:#fdf2ef;border-color:#e8c4ba}
+.fixbox.missbox .fl{color:var(--bad)}
+.fixbox.hitbox{background:#eef6f1;border-color:#c9e0d2}
+.fixbox.hitbox .fl{color:var(--good)}
 .fixbox .model{margin:9px 0 0;padding:10px 12px;background:#fff;border:1px dashed var(--line-2);
   border-radius:8px;font-size:14px;color:var(--ink)}
 .fixbox .model .ml{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;
@@ -187,6 +186,9 @@ footer.foot{margin:44px 0 0;padding:20px 0 0;border-top:1px solid var(--line);
   font-size:12.5px;color:var(--ink-3);line-height:1.6}
 .pill{display:inline-block;font-family:var(--mono);font-size:11px;padding:2px 7px;border-radius:5px;
   background:#efebe4;color:var(--ink-2);margin:0 4px 0 0}
+.pill.hit{background:#e8f2ec;color:var(--good)}
+.pill.key{background:#e7eef6;color:var(--navy)}
+.pill.caution{background:#fdf1dc;color:#8a5d10}
 
 @media(max-width:560px){
   .wrap{padding:0 15px 80px} header.top{padding:28px 0 16px}
@@ -196,14 +198,12 @@ footer.foot{margin:44px 0 0;padding:20px 0 0;border-top:1px solid var(--line);
 }
 /* ---------- split shell: scoring left, workspace right ---------- */
 .wrap{max-width:1500px}
-.shell{display:grid;grid-template-columns:minmax(0,1.04fr) minmax(0,1fr);gap:18px;align-items:start;
-  transition:grid-template-columns .34s cubic-bezier(.22,.61,.36,1)}
-.shell.collapsed{grid-template-columns:52px minmax(0,1fr)}
+.shell{display:grid;grid-template-columns:168px minmax(0,1fr);gap:16px;align-items:start}
 .lpanel{position:sticky;top:16px;max-height:calc(100vh - 32px);display:flex;flex-direction:column;
-  background:#f6f2ec;border:1px solid var(--line);border-radius:18px;overflow:hidden;min-width:0}
+  background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden;min-width:0}
 .lphead{display:flex;align-items:center;gap:9px;padding:11px 12px;border-bottom:1px solid var(--line);
-  background:#f1ece4;flex:none}
-.lptitle{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--ink-3);
+  background:var(--card);flex:none}
+.lptitle{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--ink);
   flex:1;min-width:0;white-space:nowrap;overflow:hidden}
 .lpbtn{flex:none;border:1px solid var(--line-2);background:var(--card);color:var(--ink-2);font:inherit;
   font-size:12px;padding:5px 10px;border-radius:8px;cursor:pointer;white-space:nowrap}
@@ -218,7 +218,7 @@ footer.foot{margin:44px 0 0;padding:20px 0 0;border-top:1px solid var(--line);
 .lpempty{padding:26px 14px;text-align:center;color:var(--ink-3);font-size:13.5px;line-height:1.6}
 .shell.collapsed .lphead{padding:11px 6px;justify-content:center}
 .shell.collapsed .lptitle,.shell.collapsed .lpbody,.shell.collapsed .lpact{display:none}
-.shell.collapsed .lpanel{background:#f1ece4}
+.shell.collapsed .lpanel{background:var(--card)}
 .railtxt{display:none;writing-mode:vertical-rl;font-size:10.5px;font-weight:700;letter-spacing:.12em;
   text-transform:uppercase;color:var(--ink-3);padding:10px 0}
 .shell.collapsed .railtxt{display:block}
@@ -251,27 +251,75 @@ footer.foot{margin:44px 0 0;padding:20px 0 0;border-top:1px solid var(--line);
 .heroLine{font-size:14.5px;line-height:1.6;margin:13px 0 0;font-weight:500}
 .bt.pt .phead{margin-bottom:8px}
 .bt.pt.y{border-left:3px solid var(--good)}
+.bt.pt.m{border-left:3px solid #c98a1e}
 .bt.pt.n{border-left:3px solid var(--bad)}
+.ruleline{font-size:14.5px;line-height:1.55;margin:10px 0 0;color:var(--ink-2);font-family:var(--sans)}
+.key{color:var(--navy);font-weight:600}
+.hit{color:var(--good);font-weight:600}
+.miss{color:var(--bad);font-weight:600}
+.caution{color:#8a5d10;font-weight:600}
+.heroSub.hit{color:var(--good)}
+.heroSub.miss{color:var(--bad)}
+.heroSub.caution{color:#8a5d10}
 
 
-/* mobile: scoring becomes a slide-over drawer */
-@media(max-width:900px){
-  .shell,.shell.collapsed{grid-template-columns:minmax(0,1fr)}
-  .lpanel{position:fixed;inset:0 auto 0 0;width:min(94vw,560px);max-height:100vh;z-index:60;
-    border-radius:0 18px 18px 0;transform:translateX(-101%);
-    transition:transform .32s cubic-bezier(.22,.61,.36,1);box-shadow:0 18px 60px rgba(0,0,0,.26)}
-  .shell.open .lpanel{transform:translateX(0)}
-  .shell.collapsed .lptitle,.shell.collapsed .lpbody,.shell.collapsed .lpact{display:revert}
-  .railtxt,.shell.collapsed .railtxt{display:none}
-  .scrim{position:fixed;inset:0;background:rgba(26,24,21,.4);z-index:55;opacity:0;pointer-events:none;
-    transition:opacity .3s}
-  .shell.open .scrim{opacity:1;pointer-events:auto}
-  .fab{position:fixed;left:14px;bottom:16px;z-index:50;border:0;border-radius:13px;cursor:pointer;
-    background:var(--navy);color:#fff;font:inherit;font-size:13.5px;font-weight:600;padding:12px 16px;
-    box-shadow:0 8px 26px rgba(0,0,0,.24);display:none;align-items:center;gap:8px}
-  .fab.on{display:inline-flex}
+.sidehint{margin:0;padding:2px 14px 14px;color:var(--ink);font-size:13px;line-height:1.45}
+.lesson{background:var(--card);border:1px solid var(--line);border-radius:var(--r);
+  margin:0 0 18px;box-shadow:var(--shadow)}
+.lesson>summary{list-style:none;cursor:pointer;padding:16px 18px;font-size:15px;font-weight:600;
+  display:flex;align-items:center;justify-content:space-between;gap:12px}
+.lesson>summary::-webkit-details-marker{display:none}
+.lesson>summary:after{content:"";width:8px;height:8px;border-right:1.6px solid var(--ink-2);
+  border-bottom:1.6px solid var(--ink-2);transform:rotate(45deg);flex:none;margin-top:-4px}
+.lesson[open]>summary:after{transform:rotate(-135deg);margin-top:4px}
+.lesson .lessonbody{padding:0 18px 8px}
+.lesson .lessonbody .hint{margin-left:0}
+.fmt.side{display:flex;flex-direction:column;gap:4px;margin:0;padding:10px}
+.fmtitem{display:flex;align-items:stretch;border-radius:10px;min-width:0;
+  transition:transform .22s cubic-bezier(.2,.8,.2,1),background .15s ease,box-shadow .15s ease}
+.fmt.side button[role=tab]{flex:1;min-width:0;text-align:left;border:0;border-radius:10px;
+  background:transparent;color:var(--ink);padding:10px 2px 10px 12px;font:inherit;
+  font-size:14px;font-weight:600;cursor:pointer}
+.fmt.side .grip{flex:none;width:30px;margin:3px 3px 3px 0;border:0;border-radius:8px;
+  background:transparent;color:var(--ink);padding:0;cursor:grab;display:grid;place-items:center;
+  touch-action:none;transition:background .15s ease,transform .15s ease}
+.fmtitem:has(.grip:hover):not(:has([aria-selected=true])):not(.dragging){background:#f3efe8}
+.fmt.side .grip:hover{background:rgba(26,25,23,.08);transform:scale(1.12)}
+.fmt.side .grip:active,.fmtitem.dragging .grip{cursor:grabbing;transform:scale(1)}
+.fmtitem:has([aria-selected=true]){background:var(--ink)}
+.fmt.side .fmtitem:has([aria-selected=true]) [role=tab],
+.fmt.side .fmtitem:has([aria-selected=true]) .grip{color:#fdfcfa}
+.fmtitem:has([aria-selected=true]) .grip:hover{background:rgba(255,255,255,.14)}
+.fmtitem.dragging{position:relative;z-index:1;box-shadow:0 10px 20px -12px rgba(26,25,23,.55)}
+.fmtitem.dragging:not(:has([aria-selected=true])){background:#fff}
+.fmtitem.placed{animation:fmtPlace .32s cubic-bezier(.2,.8,.2,1)}
+@keyframes fmtPlace{
+  0%{transform:scale(1.045)}
+  55%{transform:scale(.985)}
+  100%{transform:scale(1)}
 }
-@media(min-width:901px){.scrim,.fab{display:none}}
+@media(prefers-reduced-motion:reduce){
+  .fmtitem,.fmt.side .grip{transition:none}
+  .fmtitem.placed{animation:none}
+}
+
+.scoredrop{background:var(--card);border:1px solid var(--line);border-radius:var(--r);
+  margin:0 0 18px;box-shadow:var(--shadow)}
+.scoredrop[hidden]{display:none}
+.scoredrop>summary{list-style:none;cursor:pointer;padding:16px 18px;font-size:15px;font-weight:600;
+  display:flex;align-items:center;justify-content:space-between;gap:12px}
+.scoredrop>summary::-webkit-details-marker{display:none}
+.scoredrop>summary:after{content:"";width:8px;height:8px;border-right:1.6px solid var(--ink-3);
+  border-bottom:1.6px solid var(--ink-3);transform:rotate(45deg);flex:none;margin-top:-4px}
+.scoredrop[open]>summary:after{transform:rotate(-135deg);margin-top:4px}
+.scoredrop .bento{padding:0 14px 14px}
+
+.sidenav .lphead{flex-wrap:wrap;gap:6px}
+@media(max-width:480px){
+  .shell{grid-template-columns:minmax(0,1fr)}
+  .lpanel{position:static;max-height:none}
+  .fmtitem{width:100%}
+}
 
 /* ---------- per-part answer boxes ---------- */
 .ansgrid{display:flex;flex-direction:column;gap:16px}
@@ -355,7 +403,7 @@ mark.a .anum{font-family:var(--mono);font-size:9.5px;font-weight:700;vertical-al
 .genout{margin:12px 0 0;padding:14px 15px;background:#fdfcfa;border:1px solid var(--line);border-radius:12px}
 .genout .gl{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;
   color:var(--ink-3);margin:0 0 7px}
-.gwarn{font-size:12.5px;color:var(--ink-3);margin:9px 0 0;line-height:1.55}
+.gwarn{font-size:13px;color:var(--ink-2);margin:9px 0 0;line-height:1.55}
 .pv.m{background:#fdf1dc;color:#8a5d10}
 
 .fmt{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 18px}
@@ -368,10 +416,14 @@ mark.a .anum{font-family:var(--mono);font-size:9.5px;font-weight:700;vertical-al
 .move summary{cursor:pointer;padding:11px 13px;font-size:14px;display:flex;justify-content:space-between;gap:12px}
 .move summary span{font-family:var(--mono);font-size:11px;color:var(--ink-3)}
 .move p{margin:0;padding:0 13px 12px;font-size:14px;color:var(--ink-2);line-height:1.55}
-.ex{margin:0 13px 12px;padding:10px 12px;background:#fff;border:1px dashed var(--line-2);border-radius:8px}
+.ex{margin:10px 0 0;padding:0;background:transparent;border:0}
 .ex .fl{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--amber);margin:0 0 6px}
-.badex,.goodex{padding:0 0 8px;font-size:13.5px;line-height:1.55}
-.goodex{color:var(--ink);padding-bottom:0}
+.badex,.goodex{margin:0 0 8px;padding:8px 10px;border-radius:8px;font-size:13.5px;line-height:1.55;color:var(--ink)}
+.badex{background:#fdf2ef;border-left:3px solid var(--bad)}
+.goodex{background:#eef6f1;border-left:3px solid var(--good);margin-bottom:0}
+.badex b{color:var(--bad);font-weight:700}
+.goodex b{color:var(--good);font-weight:700}
+.ptask .key,.ptask .miss{font-style:normal}
 
 .docs{display:flex;flex-direction:column;gap:10px;margin:0 0 14px}
 .doc{border:1px solid var(--line);border-radius:12px;padding:12px 13px;background:#fdfcfa}
@@ -382,7 +434,10 @@ mark.a .anum{font-family:var(--mono);font-size:9.5px;font-weight:700;vertical-al
 .sort{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
 .sort button{border:1px solid var(--line-2);background:#fff;border-radius:999px;font:inherit;font-size:12.5px;
   padding:5px 10px;cursor:pointer;color:var(--ink-2)}
-.sort button[aria-pressed=true]{background:var(--navy);color:#fff;border-color:var(--navy)}
+.sort button[aria-pressed=true]{color:#fff}
+.sort button[data-bin="A"][aria-pressed=true]{background:var(--navy);border-color:var(--navy)}
+.sort button[data-bin="B"][aria-pressed=true]{background:var(--terra);border-color:var(--terra)}
+.sort button[data-bin="C"][aria-pressed=true]{background:#8a6212;border-color:#8a6212}
 
 .qitem{border-top:1px solid var(--line);padding:16px 0}
 .qitem:first-child{border-top:0}
@@ -396,11 +451,17 @@ mark.a .anum{font-family:var(--mono);font-size:9.5px;font-weight:700;vertical-al
 ul.rev{list-style:none;margin:8px 0 0;padding:0}
 ul.rev li{padding:8px 0;border-top:1px solid var(--line);font-size:14px;line-height:1.5}
 ul.rev li span{display:block;color:var(--ink-2);font-size:13px;margin-top:3px}
-ul.rev li.ok span{color:var(--good)}
-ul.rev li.bad span{color:var(--bad)}
+ul.rev li.ok,ul.rev li.bad{border-radius:8px;padding:8px 10px;margin-top:6px;border-top:0}
+ul.rev li.ok{background:#eef6f1}
+ul.rev li.bad{background:#fdf2ef}
+ul.rev li.ok span,ul.rev li.ok b{color:var(--good)}
+ul.rev li.bad span,ul.rev li.bad b{color:var(--bad)}
+ul.rev em{font-style:normal;font-weight:700}
 table.ledger{width:100%;border-collapse:collapse;font-size:13px}
 table.ledger th,table.ledger td{text-align:left;padding:6px 6px;border-bottom:1px solid var(--line);vertical-align:top}
 table.ledger th{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-3)}
+table.ledger td.yes{color:var(--good);font-weight:700}
+table.ledger td.no{color:var(--ink-3)}
 </style>
 </head>
 <body>
@@ -409,43 +470,28 @@ table.ledger th{font-size:11px;text-transform:uppercase;letter-spacing:.06em;col
 <header class="top">
   <div class="brand">
     <h1>Reader<em>.</em></h1>
-    <p class="tagline">Paste an AP World History: Modern short-answer question and your response. Get it scored part by part against the official College&nbsp;Board rubric, plus an honest read on where it lands on the 1&ndash;5 scale.</p>
+    <p class="tagline">Paste an AP World History: Modern short-answer question and your response. Each part is one point on the College&nbsp;Board rubric.</p>
   </div>
   <button class="iconbtn" id="gear" title="App PIN" aria-label="App PIN">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1.08-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1.08 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
   </button>
 </header>
 
-<nav class="fmt" id="fmtNav" role="tablist" aria-label="Question format">
-  <button type="button" role="tab" data-fmt="saq" aria-selected="true">SAQ</button>
-  <button type="button" role="tab" data-fmt="leq" aria-selected="false">LEQ</button>
-  <button type="button" role="tab" data-fmt="dbq" aria-selected="false">DBQ</button>
-  <button type="button" role="tab" data-fmt="mcq" aria-selected="false">Multiple choice</button>
-</nav>
-
-<div class="sourcebar" id="srcbar">
-  <span><b>28</b> official rubrics</span>
-  <span><b>72</b> reader commentaries</span>
-  <span><b>24</b> scored student samples</span>
-  <span><b>2023&ndash;2026</b> released exams</span>
-</div>
-
 <div class="shell" id="shell">
 
 <!-- SCORING, LEFT -->
-<aside class="lpanel" id="lpanel">
+<aside class="lpanel sidenav" id="lpanel">
   <div class="lphead">
-    <span class="railtxt">Scoring</span>
-    <span class="lptitle" id="lpTitle">Scoring</span>
-    <span class="lpact">
-      <button class="lpbtn" id="btnReset" title="Clear the workspace. The scoring stays in your history.">Reset</button>
-    </span>
-    <button class="lpbtn" id="btnSlide" title="Hide or show the scoring panel" aria-expanded="true">&laquo;</button>
+    <span class="lptitle">Format</span>
+    <button class="lpbtn" id="btnReset" title="Clear the workspace. Saved scores stay in your history.">Reset</button>
   </div>
-  <div class="lpbody" id="lpBody">
-    <div class="lpempty" id="lpEmpty">Score a response and the full breakdown appears here.</div>
-    <div class="bento" id="out"></div>
-  </div>
+  <nav class="fmt side" id="fmtNav" role="tablist" aria-label="Question format">
+    <button type="button" role="tab" data-fmt="saq" aria-selected="true">SAQ</button>
+    <button type="button" role="tab" data-fmt="leq" aria-selected="false">LEQ</button>
+    <button type="button" role="tab" data-fmt="dbq" aria-selected="false">DBQ</button>
+    <button type="button" role="tab" data-fmt="mcq" aria-selected="false">Multiple choice</button>
+  </nav>
+  <p class="sidehint" id="sideHint">Short answers, scored part by part.</p>
 </aside>
 
 <!-- WORKSPACE, RIGHT -->
@@ -491,7 +537,7 @@ table.ledger th{font-size:11px;text-transform:uppercase;letter-spacing:.06em;col
         <select id="genKind">
           <option value="secondary">Secondary-source stimulus</option>
           <option value="primary">Primary-source stimulus</option>
-          <option value="none">No stimulus</option>
+          <option value="none">No stimulus (pre-2027 practice)</option>
         </select>
       </div>
       <button class="genbtn" id="genGo">Generate a question</button>
@@ -515,11 +561,15 @@ table.ledger th{font-size:11px;text-transform:uppercase;letter-spacing:.06em;col
 </div>
 
 <div id="formatMount" hidden></div>
+<details class="scoredrop" id="scoreDrop" hidden>
+  <summary id="scoreSum">Scoring</summary>
+  <div class="bento" id="out"></div>
+</details>
 <div id="err"></div>
 
 <!-- HISTORY -->
 <section class="card" id="histCard">
-  <div class="step"><span class="n">3</span><h2>Your history</h2>
+  <div class="step"><h2>Your history</h2>
     <span style="flex:1"></span>
     <button class="lpbtn danger" id="btnClearHist">Clear history</button>
   </div>
@@ -530,14 +580,11 @@ table.ledger th{font-size:11px;text-transform:uppercase;letter-spacing:.06em;col
 </main>
 </div><!-- /shell -->
 
-<div class="scrim" id="scrim"></div>
-<button class="fab" id="fab">Scoring <span class="badge" id="fabBadge">0</span></button>
-
 <footer class="foot">
   <span class="pill">offline-ready</span><span class="pill">history stays on this device</span><br>
-  SAQ rubrics and the released LEQ and DBQ prompts follow AP World History: Modern materials
-  published on AP&nbsp;Central, including the 2026 scoring guidelines. Multiple-choice items are
-  original and follow the chapter map of Strayer and Nelson, Ways of the World, 5th edition.
+  SAQ, LEQ, and DBQ rubrics follow the scoring guidelines College Board says are unchanged for May 2027.
+  Released prompts in the bank are from 2023–2026. In 2027 the LEQ is one required question, and every SAQ has a source.
+  Multiple-choice items are original and follow the chapter map of Strayer and Nelson, Ways of the World, 5th edition.
   They are not taken from that book or from secure College Board questions. Unofficial study tool,
   not affiliated with or endorsed by College Board or the publisher. AP is a registered trademark of College Board.
 </footer>
@@ -559,9 +606,9 @@ table.ledger th{font-size:11px;text-transform:uppercase;letter-spacing:.06em;col
   </div>
 </form></dialog>
 
-<script src="app.js?v=14"></script>
-<script src="essays.js?v=1"></script>
+<script src="app.js?v=17"></script>
+<script src="essays.js?v=2"></script>
 <script src="mcq.js?v=1"></script>
-<script src="formats.js?v=1"></script>
+<script src="formats.js?v=9"></script>
 </body>
 </html>
