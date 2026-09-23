@@ -930,12 +930,14 @@ function hideScore() {
 /* ------------------------------------------------------------------ reset */
 function resetWorkspace() {
   hideScore();
+  if (typeof clearShotPages === 'function') clearShotPages();
   $('#err').innerHTML = '';
   ['A', 'B', 'C'].forEach(L => { const t = $('#ans' + L); if (t) { t.value = ''; t.dispatchEvent(new Event('input')); } });
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 $('#btnReset').onclick = () => {
-  const hasWork = $('#out').children.length || Array.from($('#ansgrid').querySelectorAll('textarea')).some(t => t.value);
+  const shotWaiting = $('#shotUse') && !$('#shotUse').hidden;
+  const hasWork = $('#out').children.length || shotWaiting || Array.from($('#ansgrid').querySelectorAll('textarea')).some(t => t.value);
   if (!hasWork) return;
   const scored = $('#out').children.length > 0;
   const msg = scored

@@ -1,8 +1,8 @@
 /* Reader — offline shell. Bump CACHE to ship an update. */
-const CACHE = 'reader-v25';
+const CACHE = 'reader-v29';
 const CORE = [
   './', './index.html', './app.js?v=17', './data.json?v=3',
-  './essays.js?v=2', './mcq.js?v=1', './formats.js?v=9',
+  './essays.js?v=2', './mcq.js?v=1', './formats.js?v=10', './read.js?v=4',
   './manifest.webmanifest', './icon-192.png', './icon-512.png', './icon-maskable.png'
 ];
 

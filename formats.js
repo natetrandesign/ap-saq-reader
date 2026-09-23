@@ -179,7 +179,10 @@ function setFormat(fmt) {
     ? 'Reader — AP World History SAQ scoring'
     : `Reader — AP World History ${fmt === 'mcq' ? 'MCQ' : fmt.toUpperCase()}`;
   if ($('#err')) $('#err').innerHTML = '';
-  if (fmt === 'saq') return;
+  if (fmt === 'saq') {
+    if (typeof mountShotWindow === 'function') mountShotWindow();
+    return;
+  }
   renderFormat();
 }
 
@@ -259,6 +262,7 @@ const LEQ_PART_EX = {
 };
 
 function renderEssay() {
+  if (typeof parkShotWindow === 'function') parkShotWindow();
   const kind = FORMAT;
   const list = pool(kind);
   if (!ESSAY_ID || !list.some(x => x.id === ESSAY_ID)) ESSAY_ID = list[0].id;
@@ -274,6 +278,7 @@ function renderEssay() {
       <p class="hint">${kind === 'leq'
         ? 'Released 2024, 2025, and 2026 prompts, plus original practice. Or paste a prompt of your own.'
         : 'The 2026 DBQ uses the published content summaries. The practice DBQs mix one public-domain excerpt with documents written for this app. Or paste a prompt and documents of your own.'}</p>
+      <div class="shotslot"></div>
       <div class="seg" role="tablist">
         <button type="button" role="tab" data-emode="lib" aria-selected="${essayMode() === 'lib'}">Released</button>
         <button type="button" role="tab" data-emode="own" aria-selected="${essayMode() === 'own'}">Paste my own</button>
@@ -376,6 +381,7 @@ function renderEssay() {
     if (savedB && $('#catB')) $('#catB').value = savedB;
   }
   $('#essayGo').onclick = () => scoreEssay();
+  if (typeof mountShotWindow === 'function') mountShotWindow();
 }
 
 function captureEssayDraft() {
@@ -728,6 +734,7 @@ function startDrill(unitId, keep) {
 }
 
 function renderMcq() {
+  if (typeof parkShotWindow === 'function') parkShotWindow();
   const own = MCQ_MODE === 'own';
   if (!own) startDrill(MCQ_SESSION ? MCQ_SESSION.unit.id : 1, true);
   const unit = MCQ_SESSION ? MCQ_SESSION.unit : MCQ_UNITS[0];
@@ -738,6 +745,7 @@ function renderMcq() {
       <p class="hint">${own
         ? 'Paste one item, choices included, then mark the letter you would bubble. Scoring judges the history. It does not treat a pasted item as a College Board question.'
         : `${esc(unit.years)} · ${esc(unit.strayer)}. ${esc(unit.blurb)} Questions are original. They are not from the book and not from a released exam.`}</p>
+      <div class="shotslot"></div>
       <div class="seg" role="tablist">
         <button type="button" role="tab" data-mmode="unit" aria-selected="${!own}">Unit drill</button>
         <button type="button" role="tab" data-mmode="own" aria-selected="${own}">Paste my own</button>
@@ -769,6 +777,7 @@ function renderMcq() {
     });
     $('#mcqGo').textContent = 'Score this question';
     $('#mcqGo').onclick = gradeOwnMcq;
+    if (typeof mountShotWindow === 'function') mountShotWindow();
     return;
   }
   $('#unitSel').onchange = () => { startDrill($('#unitSel').value, false); renderMcq(); };
@@ -789,6 +798,7 @@ function renderMcq() {
     list.appendChild(art);
   });
   $('#mcqGo').onclick = gradeMcq;
+  if (typeof mountShotWindow === 'function') mountShotWindow();
 }
 
 function gradeMcq() {
@@ -1138,12 +1148,15 @@ const resetSaq = $('#btnReset').onclick;
 $('#btnReset').onclick = () => {
   if (FORMAT === 'saq') { resetSaq(); return; }
   captureEssayDraft();
+  const shotWaiting = $('#shotUse') && !$('#shotUse').hidden;
   const dirty = $('#out').children.length
+    || shotWaiting
     || Object.values(LEQ_DRAFT).some(v => v && v.trim())
     || (DBQ_DRAFT && DBQ_DRAFT.trim())
     || (FORMAT === 'mcq' && MCQ_MODE === 'own' && (OWN.mcq.prompt || OWN.mcq.pick))
     || (FORMAT === 'mcq' && MCQ_SESSION && MCQ_SESSION.items.some(it => it.pick != null));
   if (dirty && !confirm('Clear this workspace? Saved scores stay in history on this device.')) return;
+  if (typeof clearShotPages === 'function') clearShotPages();
   hideScore();
   $('#err').innerHTML = '';
   if (FORMAT === 'mcq') {
