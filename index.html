@@ -53,7 +53,7 @@ section.card{background:var(--card);border:1px solid var(--line);border-radius:v
 .hint{color:var(--ink-3);font-size:13.5px;margin:0 0 14px 32px}
 
 /* ---------- segmented ---------- */
-.seg{display:inline-flex;background:#efebe4;border-radius:10px;padding:3px;gap:2px;margin:0 0 14px}
+.seg{display:inline-flex;flex-wrap:wrap;background:#efebe4;border-radius:10px;padding:3px;gap:2px;margin:0 0 14px}
 .seg button{border:0;background:transparent;font:inherit;font-size:13.5px;font-weight:500;
   color:var(--ink-2);padding:6px 13px;border-radius:7px;cursor:pointer;transition:.15s}
 .seg button[aria-selected=true]{background:var(--card);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.08)}
@@ -80,6 +80,7 @@ select{-webkit-appearance:none;appearance:none;cursor:pointer;
 .tasks li span.pl{font-family:var(--mono);font-weight:600;color:var(--terra);flex:none}
 
 /* ---------- button ---------- */
+.go[hidden]{display:none}
 .go{width:100%;border:0;border-radius:11px;background:var(--ink);color:#fdfcfa;font:inherit;
   font-size:15.5px;font-weight:600;padding:15px;cursor:pointer;transition:.15s;
   display:flex;align-items:center;justify-content:center;gap:9px}
@@ -91,6 +92,20 @@ select{-webkit-appearance:none;appearance:none;cursor:pointer;
 .err{background:#fdf2ef;border:1px solid #e8c4ba;color:var(--bad);border-radius:10px;
   padding:12px 14px;font-size:14px;margin:14px 0 0}
 .err code{font-family:var(--mono);font-size:12.5px;word-break:break-all}
+.shotslot{margin:0 0 16px}
+.shotwin{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+  min-height:148px;padding:22px 18px;text-align:center;
+  border:1.5px dashed var(--line-2);border-radius:14px;background:#fbfaf7;color:var(--ink-2)}
+.shotkicker{margin:0;font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--navy)}
+.shotdrop{margin:0;font-size:16px;font-weight:600;color:var(--ink)}
+.shothint{margin:0;max-width:36rem;font-size:13px;line-height:1.45;color:var(--ink-2)}
+.shotwin button{margin-top:6px;border:1px solid var(--line-2);background:var(--card);color:var(--ink);
+  font:inherit;font-size:13px;font-weight:600;padding:7px 12px;border-radius:8px;cursor:pointer}
+.shotwin button:hover:not(:disabled){border-color:var(--ink)}
+.shotwin button:disabled{opacity:.45;cursor:not-allowed}
+.shotwin.busy .shotdrop{color:var(--navy)}
+.shotwin.done .shotdrop{color:var(--good)}
+.shotwin.drag{border-color:var(--navy);background:#f4f7fb;box-shadow:inset 0 0 0 1px var(--navy)}
 
 /* ---------- results ---------- */
 #out:empty{display:none}
@@ -496,6 +511,7 @@ table.ledger td.no{color:var(--ink-3)}
 
 <!-- WORKSPACE, RIGHT -->
 <main class="rcol">
+<div id="shotPark" hidden></div>
 <div id="saqFlow">
 
 <!-- STEP 1 -->
@@ -516,6 +532,14 @@ table.ledger td.no{color:var(--ink-3)}
   </div>
 
   <div id="paneOwn" hidden>
+    <div class="shotslot">
+      <div class="shotwin" id="shotWindow" role="region" aria-label="Drop a screenshot">
+        <p class="shotkicker" id="shotLabel">SAQ</p>
+        <p class="shotdrop" id="shotText" aria-live="polite">Drop a screenshot here</p>
+        <p class="shothint">Paste with Ctrl+V. Reader puts the question in the box below. The picture is discarded.</p>
+        <button type="button" id="shotUse" hidden>Use these words</button>
+      </div>
+    </div>
     <label class="fld" for="qown">Question, including any source or passage</label>
     <textarea id="qown" rows="10" placeholder="Paste the full SAQ here, e.g.&#10;&#10;1. Respond to parts A, B, and C.&#10;  A. Identify one claim the author makes about ...&#10;  B. Describe one economic change that ...&#10;  C. Explain one reason why ...&#10;&#10;Include the stimulus passage or image caption if the question has one."></textarea>
   </div>
@@ -606,9 +630,10 @@ table.ledger td.no{color:var(--ink-3)}
   </div>
 </form></dialog>
 
-<script src="app.js?v=17"></script>
+<script src="app.js?v=18"></script>
 <script src="essays.js?v=2"></script>
 <script src="mcq.js?v=1"></script>
-<script src="formats.js?v=9"></script>
+<script src="formats.js?v=13"></script>
+<script src="read.js?v=7"></script>
 </body>
 </html>

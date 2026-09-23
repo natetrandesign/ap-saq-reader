@@ -9,7 +9,7 @@ const TAG_SAQ = $('.tagline') ? $('.tagline').innerHTML : '';
 let ESSAY_ID = null;
 let DOC_SORT = {};
 let MCQ_SESSION = null;
-let MCQ_MODE = 'unit';
+let MCQ_MODE = 'textbook';
 const ESSAY_EXTRA = { leq: [], dbq: [] };
 const ESSAY_MODE = { leq: 'lib', dbq: 'lib' };
 const LEQ_DRAFT = { intro: '', body1: '', body2: '', body3: '', conclusion: '' };
@@ -17,7 +17,7 @@ let DBQ_DRAFT = '';
 const OWN = {
   leq: { prompt: '' },
   dbq: { prompt: '', docs: '' },
-  mcq: { prompt: '', pick: null }
+  mcq: { prompt: '', stimulus: '', stem: '', choices: ['', '', '', ''], pick: null }
 };
 
 const LEQ_ROWS = [
@@ -165,13 +165,13 @@ function setFormat(fmt) {
     saq: TAG_SAQ,
     leq: 'One required essay on the May 2027 exam. Write the introduction, three body paragraphs, and the conclusion.',
     dbq: 'Seven documents, then the essay. The rubric shows up with the score.',
-    mcq: 'Ten original questions for one unit, scoped to Ways of the World, 5th edition. The right answer has to be accurate and has to do the thinking the stem asks for. You can also paste your own item.'
+    mcq: 'Textbook questions and source questions for one unit, or a screenshot of an item you already have.'
   };
   const hints = {
     saq: 'Short answers, scored part by part.',
     leq: 'Five parts. The rubric appears with the score.',
     dbq: 'Seven documents, then one essay.',
-    mcq: 'Unit drills, or a question you paste.'
+    mcq: 'Textbook, sources, or a screenshot.'
   };
   $('.tagline').innerHTML = tags[fmt];
   if ($('#sideHint')) $('#sideHint').textContent = hints[fmt];
@@ -179,7 +179,10 @@ function setFormat(fmt) {
     ? 'Reader — AP World History SAQ scoring'
     : `Reader — AP World History ${fmt === 'mcq' ? 'MCQ' : fmt.toUpperCase()}`;
   if ($('#err')) $('#err').innerHTML = '';
-  if (fmt === 'saq') return;
+  if (fmt === 'saq') {
+    if (typeof mountShotWindow === 'function') mountShotWindow();
+    return;
+  }
   renderFormat();
 }
 
@@ -259,6 +262,7 @@ const LEQ_PART_EX = {
 };
 
 function renderEssay() {
+  if (typeof parkShotWindow === 'function') parkShotWindow();
   const kind = FORMAT;
   const list = pool(kind);
   if (!ESSAY_ID || !list.some(x => x.id === ESSAY_ID)) ESSAY_ID = list[0].id;
@@ -304,11 +308,12 @@ function renderEssay() {
   const pick = $('#essayPick');
   const mode = essayMode();
   if (mode === 'own') {
+    const slot = '<div class="shotslot"></div>';
     pick.innerHTML = kind === 'leq'
-      ? `<label class="fld" for="ownPrompt">Your LEQ prompt</label>
+      ? slot + `<label class="fld" for="ownPrompt">Your LEQ prompt</label>
          <textarea id="ownPrompt" rows="8" placeholder="Paste the full prompt, including the dates and the words “evaluate the extent.”"></textarea>
          <p class="gwarn">A prompt you paste is scored with the same six-point rubric. There is no official list of acceptable evidence for it.</p>`
-      : `<label class="fld" for="ownPrompt">Your DBQ prompt</label>
+      : slot + `<label class="fld" for="ownPrompt">Your DBQ prompt</label>
          <textarea id="ownPrompt" rows="5" placeholder="Paste the prompt."></textarea>
          <label class="fld" for="ownDocs" style="margin-top:12px">Documents</label>
          <textarea id="ownDocs" rows="12" placeholder="Paste the documents. Start each one on its own line with “Document 1”, “Document 2”, and so on."></textarea>
@@ -376,6 +381,7 @@ function renderEssay() {
     if (savedB && $('#catB')) $('#catB').value = savedB;
   }
   $('#essayGo').onclick = () => scoreEssay();
+  if (typeof mountShotWindow === 'function') mountShotWindow();
 }
 
 function captureEssayDraft() {
@@ -718,29 +724,46 @@ function shuffle(arr) {
   return a;
 }
 
+function mcqKind(q) {
+  if (q.kind === 'source' || q.kind === 'textbook') return q.kind;
+  return q.stimulus ? 'source' : 'textbook';
+}
+
 function startDrill(unitId, keep) {
   const unit = MCQ_UNITS.find(u => u.id === Number(unitId)) || MCQ_UNITS[0];
-  if (keep && MCQ_SESSION && MCQ_SESSION.unit.id === unit.id) return;
+  const kind = MCQ_MODE === 'source' ? 'source' : 'textbook';
+  if (keep && MCQ_SESSION && MCQ_SESSION.unit.id === unit.id && (!MCQ_SESSION.kind || MCQ_SESSION.kind === kind)) return;
+  const questions = unit.questions.filter(q => mcqKind(q) === kind);
   MCQ_SESSION = {
     unit,
-    items: unit.questions.map((q, i) => ({ q, order: shuffle(q.choices.map((_, idx) => idx)), pick: null, i }))
+    kind,
+    items: questions.map((q, i) => ({ q, order: shuffle(q.choices.map((_, idx) => idx)), pick: null, i }))
   };
 }
 
 function renderMcq() {
-  const own = MCQ_MODE === 'own';
-  if (!own) startDrill(MCQ_SESSION ? MCQ_SESSION.unit.id : 1, true);
+  if (typeof parkShotWindow === 'function') parkShotWindow();
+  if (MCQ_MODE === 'own') MCQ_MODE = 'shot';
+  const shot = MCQ_MODE === 'shot';
+  const source = MCQ_MODE === 'source';
+  if (!shot) startDrill(MCQ_SESSION ? MCQ_SESSION.unit.id : 1, true);
   const unit = MCQ_SESSION ? MCQ_SESSION.unit : MCQ_UNITS[0];
+  const n = MCQ_SESSION ? MCQ_SESSION.items.length : 0;
   const mount = $('#formatMount');
+  const hint = shot
+    ? 'Drop a screenshot of one multiple-choice item. Reader keeps the words and discards the picture.'
+    : source
+      ? `${esc(unit.years)} · ${esc(unit.strayer)}. Each item has a primary or secondary passage written for this app. Not from the book, and not from a released exam.`
+      : `${esc(unit.years)} · ${esc(unit.strayer)}. ${esc(unit.blurb)} Chapter questions only. No passage. Not from the book, and not from a released exam.`;
   mount.innerHTML = `
     <section class="card">
-      <div class="step"><span class="n">1</span><h2>${own ? 'Your question' : esc(unit.name)}</h2></div>
-      <p class="hint">${own
-        ? 'Paste one item, choices included, then mark the letter you would bubble. Scoring judges the history. It does not treat a pasted item as a College Board question.'
-        : `${esc(unit.years)} · ${esc(unit.strayer)}. ${esc(unit.blurb)} Questions are original. They are not from the book and not from a released exam.`}</p>
+      <div class="step"><span class="n">1</span><h2>${shot ? 'Screenshot' : esc(unit.name)}</h2></div>
+      <p class="hint">${hint}</p>
+      ${shot ? '<div class="shotslot"></div>' : ''}
       <div class="seg" role="tablist">
-        <button type="button" role="tab" data-mmode="unit" aria-selected="${!own}">Unit drill</button>
-        <button type="button" role="tab" data-mmode="own" aria-selected="${own}">Paste my own</button>
+        <button type="button" role="tab" data-mmode="textbook" aria-selected="${MCQ_MODE === 'textbook' || MCQ_MODE === 'unit'}">Textbook</button>
+        <button type="button" role="tab" data-mmode="source" aria-selected="${source}">Sources</button>
+        <button type="button" role="tab" data-mmode="shot" aria-selected="${shot}">Screenshot</button>
       </div>
       <div class="genrow">
         <div class="gf">
@@ -755,20 +778,45 @@ function renderMcq() {
   mount.querySelectorAll('[data-mmode]').forEach(b => {
     b.onclick = () => { MCQ_MODE = b.dataset.mmode; renderMcq(); };
   });
-  if (own) {
+  if ($('#sideHint')) {
+    $('#sideHint').textContent = shot
+      ? 'Drop a screenshot of one item.'
+      : source
+        ? 'A passage with every question.'
+        : 'Chapter questions, no passage.';
+  }
+  if (shot) {
     $('#unitSel').parentElement.hidden = true;
     $('#reshuffle').hidden = true;
-    $('#qlist').innerHTML = `<label class="fld" for="ownMcq">Question, including choices A through D</label>
-      <textarea id="ownMcq" rows="10" placeholder="Paste the stem and the four choices."></textarea>
-      <p class="fld" style="margin-top:12px">Your answer</p>
-      <div class="opts">${['A', 'B', 'C', 'D'].map(L => `<label class="opt"><input type="radio" name="ownPick" value="${L}"${OWN.mcq.pick === L ? ' checked' : ''}> <b>${L}</b></label>`).join('')}</div>`;
-    $('#ownMcq').value = OWN.mcq.prompt || '';
-    $('#ownMcq').addEventListener('input', () => { OWN.mcq.prompt = $('#ownMcq').value; });
-    $('#qlist').querySelectorAll('input').forEach(input => {
-      input.onchange = () => { OWN.mcq.pick = input.value; };
-    });
-    $('#mcqGo').textContent = 'Score this question';
+    const read = (OWN.mcq.stem || OWN.mcq.prompt || '').trim();
+    if (read && !(OWN.mcq.choices || []).some(Boolean) && typeof parseShotMcq === 'function') {
+      const parsed = parseShotMcq(OWN.mcq.prompt, '');
+      OWN.mcq.stimulus = OWN.mcq.stimulus || parsed.stimulus;
+      OWN.mcq.stem = OWN.mcq.stem || parsed.stem;
+      OWN.mcq.choices = parsed.choices;
+    }
+    const list = $('#qlist');
+    if (!read) {
+      list.innerHTML = '<p class="hint">The item shows up here after the screenshot is read.</p>';
+    } else {
+      const art = el('article', 'qitem');
+      const stim = OWN.mcq.stimulus ? `<blockquote class="stim">${esc(OWN.mcq.stimulus)}</blockquote>` : '';
+      const choices = OWN.mcq.choices || ['', '', '', ''];
+      art.innerHTML = `<p class="qtop"><span>1</span></p>${stim}<p class="stem">${esc(OWN.mcq.stem || OWN.mcq.prompt || '')}</p>
+        <div class="opts">${['A', 'B', 'C', 'D'].map((L, i) => {
+          if (!choices[i]) return '';
+          const checked = OWN.mcq.pick === L ? ' checked' : '';
+          return `<label class="opt"><input type="radio" name="ownPick" value="${L}"${checked}> <b>${L}.</b> ${esc(choices[i])}</label>`;
+        }).join('')}</div>`;
+      art.querySelectorAll('input').forEach(input => {
+        input.onchange = () => { OWN.mcq.pick = input.value; };
+      });
+      list.appendChild(art);
+    }
+    $('#mcqGo').hidden = !read;
+    $('#mcqGo').textContent = 'Check this question';
     $('#mcqGo').onclick = gradeOwnMcq;
+    if (typeof mountShotWindow === 'function') mountShotWindow();
     return;
   }
   $('#unitSel').onchange = () => { startDrill($('#unitSel').value, false); renderMcq(); };
@@ -788,7 +836,10 @@ function renderMcq() {
     });
     list.appendChild(art);
   });
+  $('#mcqGo').hidden = false;
+  $('#mcqGo').textContent = n === 1 ? 'Check this question' : `Check these ${n}`;
   $('#mcqGo').onclick = gradeMcq;
+  if (typeof mountShotWindow === 'function') mountShotWindow();
 }
 
 function gradeMcq() {
@@ -808,7 +859,7 @@ function gradeMcq() {
     format: 'mcq',
     total: correct,
     denom: items.length,
-    label: `MCQ · Unit ${unit.id} ${unit.name}`,
+    label: `MCQ · Unit ${unit.id} ${MCQ_SESSION.kind === 'source' ? 'sources' : 'textbook'}`,
     out: result,
     answers: { picks: items.map(it => it.pick) },
     extra: { session: MCQ_SESSION, result }
@@ -819,7 +870,7 @@ async function gradeOwnMcq() {
   const prompt = (OWN.mcq.prompt || '').trim();
   const pick = OWN.mcq.pick;
   $('#err').innerHTML = '';
-  if (!prompt) return showErr('Paste a question before scoring.');
+  if (!prompt) return showErr('Read a screenshot before scoring.');
   if (!pick) return showErr('Choose A, B, C, or D before scoring.');
   const btn = $('#mcqGo');
   const old = btn.innerHTML;
@@ -837,11 +888,13 @@ async function gradeOwnMcq() {
       ok: !!(correct && correct === pick),
       pick,
       prompt,
+      stimulus: OWN.mcq.stimulus || '',
+      stem: OWN.mcq.stem || '',
       headline: out.headline || '',
       why: out.why || '',
-      choices: ['A', 'B', 'C', 'D'].map(L => {
+      choices: ['A', 'B', 'C', 'D'].map((L, i) => {
         const hit = (out.choices || []).find(c => String(c.letter || '').toUpperCase() === L) || {};
-        return { letter: L, note: hit.note || '' };
+        return { letter: L, text: (OWN.mcq.choices || [])[i] || '', note: hit.note || '' };
       })
     };
     renderOwnMcqScore(result);
@@ -849,10 +902,10 @@ async function gradeOwnMcq() {
       format: 'mcq',
       total: result.ok ? 1 : 0,
       denom: 1,
-      label: 'MCQ · Your question',
+      label: 'MCQ · Screenshot',
       out: result,
       answers: { pick },
-      extra: { mode: 'own', prompt, pick, result }
+      extra: { mode: 'shot', prompt, stimulus: OWN.mcq.stimulus || '', stem: OWN.mcq.stem || '', choices: OWN.mcq.choices || [], pick, result }
     });
   } catch (e) {
     if (e.message === '__wrongpin') showErr('That PIN was not accepted. Check it and try again.');
@@ -869,7 +922,7 @@ function renderOwnMcqScore(result) {
   out.innerHTML = '';
   const hero = el('div', 'bt hero');
   hero.innerHTML = `
-    <p class="btl">Your question</p>
+    <p class="btl">Screenshot</p>
     <div class="heroRow">
       <div>
         <div class="heroNum ${result.ok ? 'y' : 'n'}">${result.ok ? 'Right' : 'Look again'}</div>
@@ -880,10 +933,12 @@ function renderOwnMcqScore(result) {
     ${result.why ? `<p class="heroLine">${esc(result.why)}</p>` : ''}`;
   out.appendChild(hero);
   const host = el('div');
-  host.innerHTML = `<ul class="rev">${(result.choices || []).map(c => {
+  const stim = result.stimulus ? `<blockquote class="stim">${esc(result.stimulus)}</blockquote>` : '';
+  host.innerHTML = `${stim}${result.stem ? `<p class="stem">${esc(result.stem)}</p>` : ''}<ul class="rev">${(result.choices || []).map(c => {
     const isKey = c.letter === result.correctLetter;
     const picked = c.letter === result.pick;
-    return `<li class="${isKey ? 'ok' : picked ? 'bad' : ''}"><b>${esc(c.letter)}.</b> ${picked ? 'Your choice. ' : ''}${isKey ? 'Credit this.' : ''}<span>${esc(c.note || '')}</span></li>`;
+    const tag = isKey ? 'Credit this' : picked ? 'Your choice' : 'Trap';
+    return `<li class="${isKey ? 'ok' : picked ? 'bad' : ''}"><b>${esc(c.letter)}.</b> ${esc(c.text || '')}<span><em>${tag}.</em> ${esc(c.note || '')}</span></li>`;
   }).join('')}</ul>`;
   out.appendChild(tile('full', 'How the choices work', host));
   revealScore(result.ok ? 'Scoring · correct' : 'Scoring · review');
@@ -972,14 +1027,19 @@ window.openFormatHistory = function (r) {
     if (r.format === 'dbq') DBQ_DRAFT = (r.answers && r.answers.essay) || '';
   }
   if (r.format === 'mcq') {
-    MCQ_MODE = r.extra && r.extra.mode === 'own' ? 'own' : 'unit';
-    if (MCQ_MODE === 'own') {
-      OWN.mcq.prompt = (r.extra && r.extra.prompt) || '';
-      OWN.mcq.pick = (r.extra && r.extra.pick) || null;
+    const savedMode = r.extra && r.extra.mode;
+    MCQ_MODE = (savedMode === 'own' || savedMode === 'shot') ? 'shot' : (savedMode === 'source' ? 'source' : 'textbook');
+    if (MCQ_MODE === 'shot') {
+      const extra = r.extra || {};
+      OWN.mcq.prompt = extra.prompt || '';
+      OWN.mcq.pick = extra.pick || null;
+      OWN.mcq.stimulus = extra.stimulus || '';
+      OWN.mcq.stem = extra.stem || '';
+      OWN.mcq.choices = Array.isArray(extra.choices) && extra.choices.length ? extra.choices : ['', '', '', ''];
     }
   }
   setFormat(r.format);
-  if (r.format === 'mcq' && MCQ_MODE === 'own') {
+  if (r.format === 'mcq' && MCQ_MODE === 'shot') {
     if (r.extra && r.extra.result) renderOwnMcqScore(r.extra.result);
     return;
   }
@@ -1138,16 +1198,19 @@ const resetSaq = $('#btnReset').onclick;
 $('#btnReset').onclick = () => {
   if (FORMAT === 'saq') { resetSaq(); return; }
   captureEssayDraft();
+  const shotWaiting = $('#shotUse') && !$('#shotUse').hidden;
   const dirty = $('#out').children.length
+    || shotWaiting
     || Object.values(LEQ_DRAFT).some(v => v && v.trim())
     || (DBQ_DRAFT && DBQ_DRAFT.trim())
-    || (FORMAT === 'mcq' && MCQ_MODE === 'own' && (OWN.mcq.prompt || OWN.mcq.pick))
+    || (FORMAT === 'mcq' && MCQ_MODE === 'shot' && (OWN.mcq.prompt || OWN.mcq.pick))
     || (FORMAT === 'mcq' && MCQ_SESSION && MCQ_SESSION.items.some(it => it.pick != null));
   if (dirty && !confirm('Clear this workspace? Saved scores stay in history on this device.')) return;
+  if (typeof clearShotPages === 'function') clearShotPages();
   hideScore();
   $('#err').innerHTML = '';
   if (FORMAT === 'mcq') {
-    if (MCQ_MODE === 'own') OWN.mcq = { prompt: '', pick: null };
+    if (MCQ_MODE === 'shot') OWN.mcq = { prompt: '', stimulus: '', stem: '', choices: ['', '', '', ''], pick: null };
     else if (MCQ_SESSION) MCQ_SESSION.items.forEach(it => { it.pick = null; });
     renderMcq();
     return;
