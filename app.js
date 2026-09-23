@@ -39,6 +39,7 @@ document.querySelectorAll('.seg button').forEach(b => b.onclick = () => {
   $('#paneOwn').hidden = MODE !== 'own';
   $('#paneGen').hidden = MODE !== 'gen';
   buildAnswerBoxes();
+  if (typeof mountShotWindow === 'function') mountShotWindow();
 });
 
 /* ------------------------------------------------------------------ data load */

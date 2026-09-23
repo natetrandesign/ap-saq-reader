@@ -53,7 +53,7 @@ section.card{background:var(--card);border:1px solid var(--line);border-radius:v
 .hint{color:var(--ink-3);font-size:13.5px;margin:0 0 14px 32px}
 
 /* ---------- segmented ---------- */
-.seg{display:inline-flex;background:#efebe4;border-radius:10px;padding:3px;gap:2px;margin:0 0 14px}
+.seg{display:inline-flex;flex-wrap:wrap;background:#efebe4;border-radius:10px;padding:3px;gap:2px;margin:0 0 14px}
 .seg button{border:0;background:transparent;font:inherit;font-size:13.5px;font-weight:500;
   color:var(--ink-2);padding:6px 13px;border-radius:7px;cursor:pointer;transition:.15s}
 .seg button[aria-selected=true]{background:var(--card);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.08)}
@@ -80,6 +80,7 @@ select{-webkit-appearance:none;appearance:none;cursor:pointer;
 .tasks li span.pl{font-family:var(--mono);font-weight:600;color:var(--terra);flex:none}
 
 /* ---------- button ---------- */
+.go[hidden]{display:none}
 .go{width:100%;border:0;border-radius:11px;background:var(--ink);color:#fdfcfa;font:inherit;
   font-size:15.5px;font-weight:600;padding:15px;cursor:pointer;transition:.15s;
   display:flex;align-items:center;justify-content:center;gap:9px}
@@ -517,14 +518,6 @@ table.ledger td.no{color:var(--ink-3)}
 <section class="card">
   <div class="step"><span class="n">1</span><h2>The question</h2></div>
   <p class="hint">Pick a real released SAQ, or paste your own.</p>
-  <div class="shotslot">
-    <div class="shotwin" id="shotWindow" role="region" aria-label="Drop a screenshot">
-      <p class="shotkicker" id="shotLabel">SAQ</p>
-      <p class="shotdrop" id="shotText" aria-live="polite">Drop a screenshot here</p>
-      <p class="shothint">Paste with Ctrl+V. Reader sorts the words into SAQ, LEQ, DBQ, or multiple choice, then puts them in that format's boxes. The picture is discarded.</p>
-      <button type="button" id="shotUse" hidden>Use these words</button>
-    </div>
-  </div>
 
   <div class="seg" role="tablist">
     <button role="tab" aria-selected="true" data-mode="lib">Released SAQ</button>
@@ -539,6 +532,14 @@ table.ledger td.no{color:var(--ink-3)}
   </div>
 
   <div id="paneOwn" hidden>
+    <div class="shotslot">
+      <div class="shotwin" id="shotWindow" role="region" aria-label="Drop a screenshot">
+        <p class="shotkicker" id="shotLabel">SAQ</p>
+        <p class="shotdrop" id="shotText" aria-live="polite">Drop a screenshot here</p>
+        <p class="shothint">Paste with Ctrl+V. Reader puts the question in the box below. The picture is discarded.</p>
+        <button type="button" id="shotUse" hidden>Use these words</button>
+      </div>
+    </div>
     <label class="fld" for="qown">Question, including any source or passage</label>
     <textarea id="qown" rows="10" placeholder="Paste the full SAQ here, e.g.&#10;&#10;1. Respond to parts A, B, and C.&#10;  A. Identify one claim the author makes about ...&#10;  B. Describe one economic change that ...&#10;  C. Explain one reason why ...&#10;&#10;Include the stimulus passage or image caption if the question has one."></textarea>
   </div>
@@ -629,10 +630,10 @@ table.ledger td.no{color:var(--ink-3)}
   </div>
 </form></dialog>
 
-<script src="app.js?v=17"></script>
+<script src="app.js?v=18"></script>
 <script src="essays.js?v=2"></script>
 <script src="mcq.js?v=1"></script>
-<script src="formats.js?v=10"></script>
-<script src="read.js?v=4"></script>
+<script src="formats.js?v=13"></script>
+<script src="read.js?v=7"></script>
 </body>
 </html>

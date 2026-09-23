@@ -30,9 +30,9 @@ kind is "response" when the page is the student's own writing or a marked choice
 kind is "both" when the page has both.
 kind is "none" when the page has no words.
 
-question: prompt and any stimulus passage. Not the student's answer.
-documents: DBQ documents only. Start each one on its own line with "Document 1", "Document 2", and so on.
-choices: multiple-choice options, if they are separate from the question. Otherwise "".
+question: the prompt only, plus a stimulus passage when the item is an SAQ. For a DBQ, stop before Document 1. Do not put any document in question. For a multiple-choice item, put the passage first if there is one, then a blank line, then the stem. Do not put the choices in question.
+documents: the DBQ documents only. Start each one on its own line with "Document 1", "Document 2", and so on. Keep each number, attribution, and text. Do not put the prompt here.
+choices: for a multiple-choice item, one choice per line, each starting with "A. " "B. " "C. " or "D. " and the choice text. Otherwise "".
 circled: "A", "B", "C", or "D" when a choice is marked. Otherwise "".
 parts: the student's own words only. SAQ uses A, B, and C. An LEQ uses intro, body1, body2, body3, and conclusion when those breaks are visible. If the essay is not split, put it all in essay. A DBQ essay goes in essay. Leave every unused part as "".
 

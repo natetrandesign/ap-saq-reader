@@ -36,6 +36,16 @@ function mountShotWindow() {
   const label = $('#shotLabel');
   const fmt = typeof FORMAT === 'string' ? FORMAT : 'saq';
   if (label) label.textContent = { saq: 'SAQ', leq: 'LEQ', dbq: 'DBQ', mcq: 'Multiple choice' }[fmt] || 'SAQ';
+  const hint = win.querySelector('.shothint');
+  if (hint) {
+    hint.textContent = fmt === 'dbq'
+      ? 'Paste with Ctrl+V. Reader puts the prompt in the prompt box and the documents in the documents box. The picture is discarded.'
+      : fmt === 'leq'
+        ? 'Paste with Ctrl+V. Reader puts the prompt in the box below. The picture is discarded.'
+        : fmt === 'mcq'
+          ? 'Paste with Ctrl+V. Reader keeps the words from the item and discards the picture.'
+          : 'Paste with Ctrl+V. Reader puts the question in the box below. The picture is discarded.';
+  }
 }
 
 function shotButton(show) {
@@ -76,12 +86,102 @@ function focusedSlot() {
   return '';
 }
 
+/* A DBQ page often arrives as one block. The prompt stays above Document 1.
+   Everything from Document 1 down belongs in the documents box. */
+function splitDbqFields(page) {
+  if (!page) return page;
+  const marker = /(?:^|\n)\s*(?:Document|Doc\.?)\s*1\b/i;
+  const peel = text => {
+    const raw = String(text || '').trim();
+    const found = marker.exec(raw);
+    if (!found) return { prompt: raw, documents: '' };
+    let start = found.index;
+    if (raw[start] === '\n') start += 1;
+    return { prompt: raw.slice(0, found.index).trim(), documents: raw.slice(start).trim() };
+  };
+  let question = String(page.question || '').trim();
+  let documents = String(page.documents || '').trim();
+  if (question && !documents) {
+    const parts = peel(question);
+    if (parts.documents) {
+      question = parts.prompt;
+      documents = parts.documents;
+    }
+  } else if (!question && documents) {
+    const parts = peel(documents);
+    if (parts.prompt && parts.documents) {
+      question = parts.prompt;
+      documents = parts.documents;
+    }
+  } else if (question && documents && marker.test(question)) {
+    const parts = peel(question);
+    question = parts.prompt;
+    if (parts.documents && !marker.test(documents)) documents = joinText(parts.documents, documents);
+  }
+  if (documents && marker.test(documents)) {
+    const parts = peel(documents);
+    if (parts.prompt && parts.documents) {
+      if (!question) question = parts.prompt;
+      documents = parts.documents;
+    }
+  }
+  page.question = question;
+  page.documents = documents;
+  return page;
+}
+
 function joinText(a, b) {
   const x = String(a || '').trim();
   const y = String(b || '').trim();
   if (!x) return y;
   if (!y || x === y) return x;
   return x + '\n\n' + y;
+}
+
+/* A screenshot of one multiple-choice item becomes a passage, a stem, and
+   four choices, in the same shape as the textbook and source drills. */
+function parseShotMcq(question, choicesText) {
+  const q = String(question || '').replace(/\r\n/g, '\n').trim();
+  const c = String(choicesText || '').replace(/\r\n/g, '\n').trim();
+  const blob = c ? (q ? q + '\n' + c : c) : q;
+  const lines = blob.split('\n');
+  const marks = [];
+  lines.forEach((line, i) => {
+    const m = line.match(/^\s*(?:\(([A-D])\)|([A-D])[\.\)])\s*(.*)$/);
+    if (m) marks.push({ i, letter: m[1] || m[2], text: (m[3] || '').trim() });
+  });
+  const letters = new Set(marks.map(m => m.letter));
+  const choices = ['', '', '', ''];
+  let stemBlock = blob;
+  if (letters.size >= 3 && letters.has('D')) {
+    marks.forEach((m, idx) => {
+      const end = idx + 1 < marks.length ? marks[idx + 1].i : lines.length;
+      const extra = lines.slice(m.i + 1, end).join(' ').replace(/\s+/g, ' ').trim();
+      const text = [m.text, extra].filter(Boolean).join(' ').replace(/\s+/g, ' ').trim();
+      const at = 'ABCD'.indexOf(m.letter);
+      if (at >= 0 && !choices[at]) choices[at] = text;
+    });
+    stemBlock = lines.slice(0, marks[0].i).join('\n').trim();
+  }
+  stemBlock = stemBlock.replace(/^\s*\d+\s*[\.\)]\s*/, '').trim();
+  let stimulus = '';
+  let stem = stemBlock;
+  const parts = stemBlock.split(/\n\s*\n/).map(s => s.trim()).filter(Boolean);
+  if (parts.length >= 2) {
+    const last = parts[parts.length - 1];
+    const stemLike = /\?\s*$/.test(last) || /\bbest\b/i.test(last) || /^(which|what|why|how|the passage|the excerpt|the source|a historian|based on|according to|the author|this passage|reading the)\b/i.test(last);
+    if (stemLike) {
+      stimulus = parts.slice(0, -1).join('\n\n');
+      stem = last;
+    }
+  }
+  return { stimulus, stem, choices };
+}
+
+function shotMcqText(item) {
+  const head = [item.stimulus, item.stem].filter(Boolean).join('\n\n');
+  const opts = (item.choices || []).map((text, i) => text ? 'ABCD'[i] + '. ' + text : '').filter(Boolean).join('\n');
+  return [head, opts].filter(Boolean).join('\n');
 }
 
 function blankPage() {
@@ -149,6 +249,7 @@ function mergePages(pages) {
   const question = out.question || out.documents || out.choices;
   const writing = out.circled || SHOT_PARTS.some(k => out.parts[k]);
   out.kind = question && writing ? 'both' : question ? 'question' : writing ? 'response' : 'none';
+  splitDbqFields(out);
   out.format = (pages.find(p => ['saq', 'leq', 'dbq', 'mcq'].includes(p.format)) || {}).format || '';
   out.format = guessFormat(out);
   return out;
@@ -176,6 +277,7 @@ function showSaqOwn(question) {
   $('#paneGen').hidden = true;
   if (question) $('#qown').value = question;
   buildAnswerBoxes();
+  if (typeof mountShotWindow === 'function') mountShotWindow();
 }
 
 function fillBox(el, text) {
@@ -196,16 +298,32 @@ function placePages(fmt, page) {
     return;
   }
   if (fmt === 'mcq') {
-    const block = [page.question, page.choices].filter(Boolean).join('\n');
-    if (questionish && block) {
-      OWN.mcq.prompt = MCQ_MODE === 'own' ? joinText(OWN.mcq.prompt, block) : block;
-      MCQ_MODE = 'own';
+    const incoming = parseShotMcq(page.question, page.choices);
+    const incomingChoices = incoming.choices.some(Boolean);
+    const hasItem = !!(incoming.stem || incoming.stimulus || incomingChoices);
+    if (questionish && hasItem) {
+      const kept = MCQ_MODE === 'shot' ? (OWN.mcq.choices || []) : [];
+      const keptChoices = kept.some(Boolean);
+      if (MCQ_MODE === 'shot' && keptChoices && !incomingChoices) {
+        OWN.mcq.stimulus = joinText(OWN.mcq.stimulus, incoming.stimulus || incoming.stem);
+      } else if (MCQ_MODE === 'shot' && OWN.mcq.stem && !keptChoices && incomingChoices) {
+        if (!OWN.mcq.stimulus && incoming.stimulus) OWN.mcq.stimulus = incoming.stimulus;
+        if (!OWN.mcq.stem) OWN.mcq.stem = incoming.stem;
+        OWN.mcq.choices = incoming.choices;
+      } else {
+        OWN.mcq.stimulus = incoming.stimulus;
+        OWN.mcq.stem = incoming.stem;
+        OWN.mcq.choices = incoming.choices;
+      }
+      OWN.mcq.prompt = shotMcqText(OWN.mcq);
+      MCQ_MODE = 'shot';
     }
-    if (page.circled && (MCQ_MODE === 'own' || questionish)) OWN.mcq.pick = page.circled;
-    if (MCQ_MODE === 'own') renderMcq();
+    if (page.circled && (MCQ_MODE === 'shot' || questionish)) OWN.mcq.pick = page.circled;
+    if (MCQ_MODE === 'shot') renderMcq();
     return;
   }
   const kind = fmt === 'dbq' ? 'dbq' : 'leq';
+  if (kind === 'dbq') splitDbqFields(page);
   captureEssayDraft();
   if (questionish && (page.question || page.documents)) {
     const fresh = ESSAY_MODE[kind] !== 'own';
